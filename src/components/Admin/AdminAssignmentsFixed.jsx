@@ -791,14 +791,6 @@ const AdminAssignments = ({ open, onClose }) => {
                                                     
                                                     {assignment.status === 'pending' && (
                                                         <Tooltip title="Marcar como Completado">
-                                                            <IconButton
-                                                                size="small"
-                                                                onClick={() => handleCompleteAssignment(assignment._id)}
-                                                                color="success"
-                                                                disabled={actionLoading}
-                                                            >
-                                                                <Done />
-                                                            </IconButton>
                                                         </Tooltip>
                                                     )}
                                                     <Tooltip title="Editar Asignación">

@@ -21,7 +21,9 @@ import {
   Badge,
   Skeleton,
   Grow,
-  Slide
+  Slide,
+  Stack,
+  Tooltip
 } from '@mui/material';
 import {
   School,
@@ -31,11 +33,15 @@ import {
   Close,
   FiberManualRecord,
   Dashboard,
-  AccountCircle
+  AccountCircle,
+  VerifiedUser,
+  BadgeOutlined,
+  ContentCopy,
+  Code
 } from '@mui/icons-material';
 import { styled, keyframes } from '@mui/material/styles';
 
-// Animaciones avanzadas
+// Animaciones optimizadas
 const gradientShift = keyframes`
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -44,17 +50,17 @@ const gradientShift = keyframes`
 
 const floatingAnimation = keyframes`
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-8px); }
 `;
 
 const pulseGlow = keyframes`
   0%, 100% { 
-    box-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
     transform: scale(1);
   }
   50% { 
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.8);
-    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(99, 102, 241, 0.6);
+    transform: scale(1.02);
   }
 `;
 
@@ -63,183 +69,198 @@ const shimmerAnimation = keyframes`
   100% { transform: translateX(100%); }
 `;
 
-// Componente principal responsive con margen superior agregado
-const ResponsiveContainer = styled(Container)(({ theme }) => ({
-  padding: theme.spacing(2),
-  maxWidth: 'none !important',
+// Contenedor principal más compacto y moderno
+const ModernContainer = styled(Container)(({ theme }) => ({
+  padding: theme.spacing(1.5),
+  maxWidth: '100% !important',
   width: '100%',
-  // AGREGADO: Margen superior para separar del navbar
-  marginTop: theme.spacing(3),
+  marginTop: theme.spacing(2),
   
   [theme.breakpoints.up('sm')]: {
-    padding: theme.spacing(3),
-    maxWidth: '600px !important',
-    marginTop: theme.spacing(4), // Más espacio en tablets
+    padding: theme.spacing(2),
+    maxWidth: '95% !important',
+    marginTop: theme.spacing(2.5),
   },
   
   [theme.breakpoints.up('md')]: {
-    padding: theme.spacing(4),
-    maxWidth: '960px !important',
-    marginTop: theme.spacing(5), // Más espacio en desktop
-  },
-  
-  [theme.breakpoints.up('lg')]: {
-    padding: theme.spacing(4),
-    maxWidth: '1200px !important',
-    marginTop: theme.spacing(6), // Máximo espacio en pantallas grandes
-  },
-  
-  [theme.breakpoints.up('xl')]: {
-    padding: theme.spacing(5),
-    maxWidth: '1400px !important',
-    marginTop: theme.spacing(7), // Espacio extra en pantallas muy grandes
-  },
-}));
-
-// Card principal con diseño adaptativo
-const MainProfileCard = styled(Card)(({ theme }) => ({
-  background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
-  backdropFilter: 'blur(25px)',
-  borderRadius: '20px',
-  border: '1px solid rgba(255,255,255,0.3)',
-  boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-  position: 'relative',
-  overflow: 'hidden',
-  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-  // AGREGADO: Margen superior adicional para la tarjeta principal
-  marginTop: theme.spacing(2),
-  
-  '&:hover': {
-    transform: 'translateY(-8px)',
-    boxShadow: '0 30px 60px rgba(0,0,0,0.15)',
-  },
-  
-  [theme.breakpoints.down('sm')]: {
-    borderRadius: '16px',
-    margin: `${theme.spacing(2)} ${theme.spacing(1)} ${theme.spacing(1)}`,
-  },
-  
-  [theme.breakpoints.up('sm')]: {
+    padding: theme.spacing(2.5),
+    maxWidth: '90% !important',
     marginTop: theme.spacing(3),
   },
   
-  [theme.breakpoints.up('md')]: {
+  [theme.breakpoints.up('lg')]: {
+    padding: theme.spacing(3),
+    maxWidth: '85% !important',
+    marginTop: theme.spacing(3.5),
+  },
+  
+  [theme.breakpoints.up('xl')]: {
+    padding: theme.spacing(3.5),
+    maxWidth: '80% !important',
     marginTop: theme.spacing(4),
+  },
+}));
+
+// Card principal más compacto con glassmorphism moderno
+const CompactProfileCard = styled(Card)(({ theme }) => ({
+  background: 'linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.95) 100%)',
+  backdropFilter: 'blur(30px)',
+  borderRadius: '24px',
+  border: '1px solid rgba(255,255,255,0.5)',
+  boxShadow: '0 25px 50px rgba(0,0,0,0.08), 0 0 0 1px rgba(255,255,255,0.3)',
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+  marginTop: theme.spacing(1),
+  
+  '&:hover': {
+    transform: 'translateY(-12px)',
+    boxShadow: '0 40px 80px rgba(0,0,0,0.12), 0 0 0 1px rgba(255,255,255,0.4)',
+    '& .gradient-bar': {
+      height: '8px',
+    }
+  },
+  
+  [theme.breakpoints.down('sm')]: {
+    borderRadius: '20px',
+    margin: `${theme.spacing(1)} ${theme.spacing(0.5)}`,
+  },
+  
+  [theme.breakpoints.up('sm')]: {
+    marginTop: theme.spacing(1.5),
+  },
+  
+  [theme.breakpoints.up('md')]: {
+    marginTop: theme.spacing(2),
   }
 }));
 
-// Barra de gradiente animada
-const AnimatedGradientBar = styled(Box)(({ theme }) => ({
+// Barra de gradiente más elegante
+const ElegantGradientBar = styled(Box)(({ theme }) => ({
   position: 'absolute',
   top: 0,
   left: 0,
   right: 0,
-  height: '4px',
-  background: 'linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe)',
-  backgroundSize: '300% 100%',
-  animation: `${gradientShift} 6s ease infinite`,
+  height: '5px',
+  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%)',
+  backgroundSize: '400% 100%',
+  animation: `${gradientShift} 8s ease infinite`,
+  transition: 'height 0.3s ease',
   
   [theme.breakpoints.up('md')]: {
     height: '6px',
   }
 }));
 
-// Avatar responsive con animaciones
-const ResponsiveAvatar = styled(Avatar)(({ theme }) => ({
-  width: 120,
-  height: 120,
-  border: '3px solid white',
-  boxShadow: '0 15px 30px rgba(102, 126, 234, 0.3)',
-  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-  animation: `${floatingAnimation} 6s ease-in-out infinite`,
+// Avatar más compacto y moderno
+const ModernAvatar = styled(Avatar)(({ theme }) => ({
+  width: 100,
+  height: 100,
+  border: '4px solid white',
+  boxShadow: '0 20px 40px rgba(99, 102, 241, 0.25), 0 0 0 1px rgba(99, 102, 241, 0.1)',
+  transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+  animation: `${floatingAnimation} 8s ease-in-out infinite`,
   objectFit: 'cover',
   backgroundPosition: 'center',
   backgroundSize: 'cover',
   
   '&:hover': {
-    transform: 'scale(1.1) rotate(5deg)',
-    boxShadow: '0 25px 50px rgba(102, 126, 234, 0.4)',
+    transform: 'scale(1.15) rotate(8deg)',
+    boxShadow: '0 30px 60px rgba(99, 102, 241, 0.35), 0 0 0 2px rgba(99, 102, 241, 0.2)',
+    animation: `${pulseGlow} 2s ease-in-out infinite`,
   },
   
   [theme.breakpoints.up('sm')]: {
-    width: 140,
-    height: 140,
-    border: '4px solid white',
+    width: 110,
+    height: 110,
   },
   
   [theme.breakpoints.up('md')]: {
-    width: 160,
-    height: 160,
-    border: '5px solid white',
+    width: 120,
+    height: 120,
   },
   
   [theme.breakpoints.up('lg')]: {
-    width: 180,
-    height: 180,
+    width: 130,
+    height: 130,
   }
 }));
 
-// Eliminar el OnlineStatusIndicator ya que no lo usaremos
-
-// Tarjetas de información adaptativas
-const InfoCardAdaptive = styled(Paper)(({ theme }) => ({
+// Tarjetas de información más modernas y compactas
+const ModernInfoCard = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(1.5),
-  borderRadius: '12px',
-  background: 'rgba(248, 250, 252, 0.8)',
-  border: '1px solid rgba(226, 232, 240, 0.6)',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  borderRadius: '16px',
+  background: 'linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(255, 255, 255, 0.8) 100%)',
+  border: '1px solid rgba(99, 102, 241, 0.1)',
+  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
   cursor: 'pointer',
   
   '&:hover': {
-    transform: 'translateY(-4px) scale(1.02)',
-    boxShadow: '0 12px 30px rgba(0, 0, 0, 0.15)',
-    background: 'rgba(255, 255, 255, 0.95)',
+    transform: 'translateY(-6px) scale(1.03)',
+    boxShadow: '0 20px 40px rgba(99, 102, 241, 0.15)',
+    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)',
+    border: '1px solid rgba(99, 102, 241, 0.2)',
     
     '& .info-shimmer': {
       transform: 'translateX(100%)',
+    },
+    
+    '& .icon-container': {
+      transform: 'scale(1.1) rotate(5deg)',
     }
   },
   
   [theme.breakpoints.up('sm')]: {
     padding: theme.spacing(2),
-    borderRadius: '16px',
+    borderRadius: '18px',
   },
   
   [theme.breakpoints.up('md')]: {
     padding: theme.spacing(2.5),
+    borderRadius: '20px',
   }
 }));
 
-// Efecto shimmer para las tarjetas
-const ShimmerEffect = styled(Box)(({ theme }) => ({
+// Efecto shimmer mejorado
+const EnhancedShimmerEffect = styled(Box)(({ theme }) => ({
   position: 'absolute',
   top: 0,
   left: '-100%',
   width: '100%',
   height: '100%',
-  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
-  transition: 'transform 0.6s ease',
+  background: 'linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.2), transparent)',
+  transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
   pointerEvents: 'none',
 }));
 
-// Contenedor del icono adaptativo
-const IconContainer = styled(Box)(({ theme }) => ({
-  width: 32,
-  height: 32,
-  borderRadius: '8px',
+// Contenedor del icono mejorado
+const ModernIconContainer = styled(Box)(({ theme }) => ({
+  width: 36,
+  height: 36,
+  borderRadius: '12px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   color: 'white',
   flexShrink: 0,
-  transition: 'all 0.3s ease',
+  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  position: 'relative',
+  
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    inset: 0,
+    borderRadius: 'inherit',
+    background: 'linear-gradient(145deg, rgba(255,255,255,0.3), transparent)',
+    pointerEvents: 'none',
+  },
   
   [theme.breakpoints.up('sm')]: {
-    width: 40,
-    height: 40,
-    borderRadius: '12px',
+    width: 42,
+    height: 42,
+    borderRadius: '14px',
   },
   
   [theme.breakpoints.up('md')]: {
@@ -249,49 +270,50 @@ const IconContainer = styled(Box)(({ theme }) => ({
   }
 }));
 
-// Alert de bienvenida mejorado con margen superior
-const WelcomeAlertStyled = styled(Alert)(({ theme }) => ({
-  borderRadius: '16px',
+// Alert de bienvenida más elegante
+const ElegantWelcomeAlert = styled(Alert)(({ theme }) => ({
+  borderRadius: '20px',
   marginBottom: theme.spacing(2),
-  // AGREGADO: Margen superior para separar del navbar
   marginTop: theme.spacing(1),
-  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-  background: 'linear-gradient(135deg, #667eea, #764ba2)',
+  boxShadow: '0 15px 35px rgba(99, 102, 241, 0.2), 0 0 0 1px rgba(99, 102, 241, 0.1)',
+  background: 'linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)',
   color: 'white',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
   
   '& .MuiAlert-icon': {
     color: 'white',
   },
   
-  [theme.breakpoints.up('sm')]: {
-    marginBottom: theme.spacing(3),
-    marginTop: theme.spacing(2),
-    borderRadius: '20px',
+  '& .MuiAlert-message': {
+    fontWeight: 500,
   },
   
-  [theme.breakpoints.up('md')]: {
-    marginTop: theme.spacing(3),
+  [theme.breakpoints.up('sm')]: {
+    marginBottom: theme.spacing(2.5),
+    marginTop: theme.spacing(1.5),
+    borderRadius: '24px',
   }
 }));
 
-// Componente de título responsive
-const ResponsiveTitle = styled(Typography)(({ theme }) => ({
-  fontSize: '1.5rem',
-  fontWeight: 'bold',
+// Título más moderno y compacto
+const ModernTitle = styled(Typography)(({ theme }) => ({
+  fontSize: '1.75rem',
+  fontWeight: 700,
   textAlign: 'center',
-  background: 'linear-gradient(135deg, #667eea, #764ba2)',
+  background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
   WebkitBackgroundClip: 'text',
   WebkitTextFillColor: 'transparent',
   backgroundClip: 'text',
   marginBottom: theme.spacing(1),
+  letterSpacing: '-0.025em',
   
   [theme.breakpoints.up('sm')]: {
-    fontSize: '1.75rem',
+    fontSize: '2rem',
     textAlign: 'left',
   },
   
   [theme.breakpoints.up('md')]: {
-    fontSize: '2rem',
+    fontSize: '2.25rem',
   },
   
   [theme.breakpoints.up('lg')]: {
@@ -299,8 +321,36 @@ const ResponsiveTitle = styled(Typography)(({ theme }) => ({
   }
 }));
 
-// Componente de loading mejorado
-const LoadingContainer = styled(Box)(({ theme }) => ({
+// Chip de rol más moderno
+const ModernRoleChip = styled(Chip)(({ theme }) => ({
+  background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+  color: 'white',
+  fontWeight: 600,
+  fontSize: '0.875rem',
+  height: 32,
+  borderRadius: '16px',
+  border: '2px solid rgba(255, 255, 255, 0.2)',
+  transition: 'all 0.3s ease',
+  
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: '0 8px 25px rgba(99, 102, 241, 0.4)',
+  },
+  
+  '& .MuiChip-icon': {
+    color: 'white',
+    fontSize: '1.1rem',
+  },
+  
+  [theme.breakpoints.up('sm')]: {
+    height: 36,
+    fontSize: '0.9rem',
+    borderRadius: '18px',
+  }
+}));
+
+// Loading container mejorado
+const ModernLoadingContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
@@ -308,16 +358,11 @@ const LoadingContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
   textAlign: 'center',
   padding: theme.spacing(2),
-  // AGREGADO: Margen superior para el loading
-  marginTop: theme.spacing(3),
+  marginTop: theme.spacing(2),
   
   [theme.breakpoints.up('sm')]: {
     padding: theme.spacing(3),
-    marginTop: theme.spacing(4),
-  },
-  
-  [theme.breakpoints.up('md')]: {
-    marginTop: theme.spacing(5),
+    marginTop: theme.spacing(3),
   }
 }));
 
@@ -332,6 +377,7 @@ const ActiveSession = () => {
   const [error, setError] = useState('');
   const [openWelcome, setOpenWelcome] = useState(true);
   const [showContent, setShowContent] = useState(false);
+  const [copiedField, setCopiedField] = useState('');
 
   useEffect(() => {
     if (!loading && currentUser) {
@@ -353,92 +399,126 @@ const ActiveSession = () => {
       }
       
       setUserReady(true);
-      setTimeout(() => setShowContent(true), 300);
+      setTimeout(() => setShowContent(true), 200);
       
     } else if (!loading && !currentUser) {
       console.log('❌ No hay usuario autenticado');
       setUserReady(true);
-      setTimeout(() => setShowContent(true), 300);
+      setTimeout(() => setShowContent(true), 200);
     }
   }, [loading, currentUser?.fotoPerfil, currentUser?._id]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setOpenWelcome(false);
-    }, 5000);
+    }, 4000);
 
     return () => clearTimeout(timer);
   }, []);
 
-  // Pantalla de loading mejorada
+  // Pantalla de loading moderna
   if (loading || !userReady) {
     return (
-      <LoadingContainer>
-        <Box sx={{ width: '100%', maxWidth: 400, mb: 3 }}>
+      <ModernLoadingContainer>
+        <Box sx={{ width: '100%', maxWidth: 350, mb: 4 }}>
           <LinearProgress 
             sx={{ 
               width: '100%', 
-              height: 6,
-              borderRadius: 3,
-              backgroundColor: 'rgba(102, 126, 234, 0.1)',
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: 'rgba(99, 102, 241, 0.1)',
               '& .MuiLinearProgress-bar': {
-                background: 'linear-gradient(90deg, #667eea, #764ba2)',
-                borderRadius: 3,
+                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                borderRadius: 4,
               }
             }} 
           />
         </Box>
         
-        <Skeleton variant="circular" width={80} height={80} sx={{ mb: 2 }} />
+        <Skeleton 
+          variant="circular" 
+          width={100} 
+          height={100} 
+          sx={{ 
+            mb: 3,
+            boxShadow: '0 15px 35px rgba(0,0,0,0.1)'
+          }} 
+        />
         
-        <Skeleton variant="text" width={250} height={32} sx={{ mb: 1 }} />
-        <Skeleton variant="text" width={180} height={24} />
+        <Skeleton variant="text" width={280} height={40} sx={{ mb: 1, borderRadius: 2 }} />
+        <Skeleton variant="text" width={200} height={28} sx={{ mb: 3, borderRadius: 1 }} />
         
-        <Box sx={{ mt: 3, display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
-          <Skeleton variant="rectangular" width={120} height={60} sx={{ borderRadius: 2 }} />
-          <Skeleton variant="rectangular" width={120} height={60} sx={{ borderRadius: 2 }} />
-          <Skeleton variant="rectangular" width={120} height={60} sx={{ borderRadius: 2 }} />
-        </Box>
-      </LoadingContainer>
+        <Stack direction="row" spacing={2} flexWrap="wrap" justifyContent="center">
+          <Skeleton variant="rectangular" width={140} height={70} sx={{ borderRadius: 3 }} />
+          <Skeleton variant="rectangular" width={140} height={70} sx={{ borderRadius: 3 }} />
+          <Skeleton variant="rectangular" width={140} height={70} sx={{ borderRadius: 3 }} />
+        </Stack>
+      </ModernLoadingContainer>
     );
   }
 
-  // Configuración de información del usuario
+  // Configuración de información del usuario con iconos modernos
   const userInfo = [
     {
-      icon: <Person />,
-      label: 'Número de Control',
+      icon: <BadgeOutlined />,
+      label: 'Número de Empleado',
       value: currentUser?.numeroControl || 'N/A',
-      color: { primary: '#3b82f6', secondary: '#1d4ed8' }
+      color: { primary: '#6366f1', secondary: '#4f46e5' }
     },
     {
       icon: <Email />,
-      label: 'Correo',
+      label: 'Correo Electrónico',
       value: currentUser?.email || 'N/A',
-      color: { primary: '#ef4444', secondary: '#dc2626' }
+      color: { primary: '#ec4899', secondary: '#db2777' }
     },
     {
       icon: <School />,
       label: 'Carrera',
       value: currentUser?.carrera?.nombre || 'N/A',
-      color: { primary: '#10b981', secondary: '#059669' }
+      color: { primary: '#06b6d4', secondary: '#0891b2' }
     }
   ];
 
+  // Utilidades de formato y copia
+  const toTitleCase = (text) => (text || '')
+    .toLowerCase()
+    .replace(/(^|\s)\S/g, (t) => t.toUpperCase());
+
+  const fullName = `${toTitleCase(currentUser?.nombre)} ${toTitleCase(currentUser?.apellidoPaterno)} ${toTitleCase(currentUser?.apellidoMaterno)}`.trim();
+
+  const handleCopy = async (value, fieldKey) => {
+    try {
+      if (!value) return;
+      await navigator.clipboard.writeText(String(value));
+      setCopiedField(fieldKey);
+      setTimeout(() => setCopiedField(''), 1200);
+    } catch (e) {
+      console.error('No se pudo copiar al portapapeles', e);
+    }
+  };
+
+  const isISC = (currentUser?.carrera?.nombre || '').toLowerCase().includes('sistemas');
+
   return (
-    <ResponsiveContainer>
-      <Fade in={showContent} timeout={800}>
+    <ModernContainer>
+      <Fade in={showContent} timeout={600}>
         <Box>
-          {/* Mensaje de bienvenida */}
+          {/* Mensaje de bienvenida elegante */}
           {openWelcome && currentUser && (
-            <Slide direction="down" in={openWelcome} timeout={600}>
-              <WelcomeAlertStyled
+            <Slide direction="down" in={openWelcome} timeout={500}>
+              <ElegantWelcomeAlert
                 severity="success"
                 action={
                   <IconButton
                     color="inherit"
                     size="small"
                     onClick={() => setOpenWelcome(false)}
+                    sx={{ 
+                      '&:hover': { 
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        transform: 'scale(1.1)'
+                      }
+                    }}
                   >
                     <Close />
                   </IconButton>
@@ -448,21 +528,22 @@ const ActiveSession = () => {
                   variant={isMobile ? "body2" : "body1"} 
                   fontWeight="medium"
                 >
-                  ¡Bienvenido(a) {`${currentUser.nombre} ${currentUser.apellidoPaterno}`}! 
-                  {!isMobile && " Iniciaste sesión correctamente."}
+                  ¡Bienvenido(a) de vuelta, {currentUser.nombre}! 
+                  {!isMobile && " Tu sesión está activa y lista."}
                 </Typography>
-              </WelcomeAlertStyled>
+              </ElegantWelcomeAlert>
             </Slide>
           )}
 
-          {/* Mensaje de error */}
+          {/* Mensaje de error moderno */}
           {error && (
             <Slide direction="down" in={!!error} timeout={400}>
               <Alert 
                 severity="error" 
                 sx={{ 
-                  mb: { xs: 2, sm: 3 }, 
-                  borderRadius: { xs: '12px', sm: '16px' }
+                  mb: { xs: 2, sm: 2.5 }, 
+                  borderRadius: { xs: '16px', sm: '20px' },
+                  boxShadow: '0 10px 30px rgba(239, 68, 68, 0.2)'
                 }}
                 action={
                   <IconButton
@@ -479,18 +560,18 @@ const ActiveSession = () => {
             </Slide>
           )}
 
-          {/* Perfil del usuario */}
-          <Grow in={showContent} timeout={1000}>
-            <MainProfileCard sx={{ mb: { xs: 2, sm: 3, md: 4 } }}>
-              <AnimatedGradientBar />
+          {/* Perfil del usuario compacto y moderno */}
+          <Grow in={showContent} timeout={800}>
+            <CompactProfileCard sx={{ mb: { xs: 3, sm: 4 } }}>
+              <ElegantGradientBar className="gradient-bar" />
               <CardContent 
                 sx={{ 
-                  p: { xs: 2, sm: 3, md: 4 },
-                  '&:last-child': { pb: { xs: 2, sm: 3, md: 4 } }
+                  p: { xs: 2.5, sm: 3, md: 3.5 },
+                  '&:last-child': { pb: { xs: 2.5, sm: 3, md: 3.5 } }
                 }}
               >
-                <Grid container spacing={{ xs: 2, sm: 3, md: 4 }} alignItems="center">
-                  {/* Avatar */}
+                <Grid container spacing={{ xs: 2.5, sm: 3, md: 3.5 }} alignItems="center">
+                  {/* Avatar compacto */}
                   <Grid 
                     item 
                     xs={12} 
@@ -500,77 +581,82 @@ const ActiveSession = () => {
                     justifyContent="center"
                     alignItems="center"
                   >
-                    <Box>
-                      <ResponsiveAvatar
-                        src={currentUser?.fotoPerfil && currentUser.fotoPerfil !== ''
-                          ? `http://localhost:3001/uploads/perfiles/${currentUser.fotoPerfil}?t=${Date.now()}`
-                          : 'http://localhost:3001/uploads/perfiles/2138822222222_1749571359362.png'
-                        }
-                        alt={`Foto de perfil de ${currentUser?.nombre || 'Usuario'}`}
-                        sx={{ 
-                          background: 'linear-gradient(135deg, #667eea, #764ba2)',
-                          fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center'
-                        }}
-                      >
-                        {currentUser?.nombre?.charAt(0) || 'U'}
-                      </ResponsiveAvatar>
-                    </Box>
+                    <ModernAvatar
+                      src={currentUser?.fotoPerfil && currentUser.fotoPerfil !== ''
+                        ? `http://localhost:3001/uploads/perfiles/${currentUser.fotoPerfil}?t=${Date.now()}`
+                        : 'http://localhost:3001/uploads/perfiles/2138822222222_1749571359362.png'
+                      }
+                      alt={`Foto de perfil de ${currentUser?.nombre || 'Usuario'}`}
+                      sx={{ 
+                        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                        fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
+                        fontWeight: 600
+                      }}
+                    >
+                      {currentUser?.nombre?.charAt(0) || 'U'}
+                    </ModernAvatar>
                   </Grid>
 
                   {/* Información del usuario */}
                   <Grid item xs={12} sm={12} md={8}>
                     <Box textAlign={{ xs: 'center', md: 'left' }}>
-                      <ResponsiveTitle>
-                        {`${currentUser?.nombre || ''} ${currentUser?.apellidoPaterno || ''} ${currentUser?.apellidoMaterno || ''}`}
-                      </ResponsiveTitle>
+                      <ModernTitle>
+                        {fullName}
+                      </ModernTitle>
                       
                       <Box 
                         display="flex" 
                         justifyContent={{ xs: 'center', md: 'flex-start' }} 
-                        mb={{ xs: 2, sm: 3 }}
+                        mb={{ xs: 2.5, sm: 3 }}
                       >
-                        <Badge 
-                        >
-                          <Chip
-                            icon={<AccountCircle />}
-                            label="Docente"
-                            color="primary"
-                            size={isMobile ? "small" : "medium"}
-                            sx={{ 
-                              fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                              fontWeight: 'medium',
-                              px: { xs: 1, sm: 2 }
-                            }}
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <ModernRoleChip
+                            icon={<VerifiedUser />}
+                            label={isISC ? 'Docente ISC' : 'Docente Activo'}
+                            size={isMobile ? 'small' : 'medium'}
                           />
-                        </Badge>
+                          {isISC && (
+                            <Chip
+                              icon={<Code />}
+                              label="ISC"
+                              size={isMobile ? 'small' : 'medium'}
+                              sx={{
+                                fontWeight: 700,
+                                color: 'white',
+                                background: 'linear-gradient(135deg, #0ea5e9, #6366f1)',
+                                borderRadius: '16px',
+                                height: 32,
+                                '& .MuiChip-icon': { color: 'white' }
+                              }}
+                            />
+                          )}
+                        </Stack>
                       </Box>
 
-                      <Grid container spacing={{ xs: 1, sm: 2 }}>
+                      <Grid container spacing={{ xs: 1.5, sm: 2 }}>
                         {userInfo.map((info, index) => (
                           <Grid item xs={12} sm={6} key={index}>
-                            <Grow in={showContent} timeout={1200 + (index * 200)}>
-                              <InfoCardAdaptive elevation={0}>
-                                <ShimmerEffect className="info-shimmer" />
-                                <Box display="flex" alignItems="center" gap={{ xs: 1, sm: 2 }}>
-                                  <IconContainer
+                            <Grow in={showContent} timeout={1000 + (index * 150)}>
+                              <ModernInfoCard elevation={0}>
+                                <EnhancedShimmerEffect className="info-shimmer" />
+                                <Box display="flex" alignItems="center" gap={{ xs: 1.5, sm: 2 }}>
+                                  <ModernIconContainer
+                                    className="icon-container"
                                     sx={{
                                       background: `linear-gradient(135deg, ${info.color.primary}, ${info.color.secondary})`,
                                     }}
                                   >
                                     {info.icon}
-                                  </IconContainer>
+                                  </ModernIconContainer>
                                   <Box flex={1} minWidth={0}>
                                     <Typography 
                                       variant="caption" 
                                       color="text.secondary"
                                       sx={{ 
                                         textTransform: 'uppercase',
-                                        fontWeight: 'bold',
-                                        letterSpacing: '0.5px',
-                                        fontSize: { xs: '0.6rem', sm: '0.75rem' }
+                                        fontWeight: 700,
+                                        letterSpacing: '0.75px',
+                                        fontSize: { xs: '0.65rem', sm: '0.75rem' }
                                       }}
                                     >
                                       {info.label}
@@ -578,7 +664,7 @@ const ActiveSession = () => {
                                     <Typography 
                                       variant={isMobile ? "body2" : "body1"}
                                       color="text.primary"
-                                      fontWeight="medium"
+                                      fontWeight="600"
                                       sx={{ 
                                         wordBreak: 'break-word',
                                         mt: 0.5,
@@ -588,8 +674,23 @@ const ActiveSession = () => {
                                       {info.value}
                                     </Typography>
                                   </Box>
+                                  {(info.label === 'Número de Control' || info.label === 'Correo Electrónico') && (
+                                    <Tooltip title={copiedField === info.label ? 'Copiado' : 'Copiar'}>
+                                      <IconButton
+                                        size={isMobile ? 'small' : 'medium'}
+                                        aria-label={`Copiar ${info.label.toLowerCase()}`}
+                                        onClick={() => handleCopy(info.value, info.label)}
+                                        sx={{
+                                          color: copiedField === info.label ? 'success.main' : 'text.secondary',
+                                          '&:hover': { color: 'primary.main' }
+                                        }}
+                                      >
+                                        <ContentCopy fontSize="inherit" />
+                                      </IconButton>
+                                    </Tooltip>
+                                  )}
                                 </Box>
-                              </InfoCardAdaptive>
+                              </ModernInfoCard>
                             </Grow>
                           </Grid>
                         ))}
@@ -598,36 +699,60 @@ const ActiveSession = () => {
                   </Grid>
                 </Grid>
               </CardContent>
-            </MainProfileCard>
+            </CompactProfileCard>
           </Grow>
 
-          {/* Sección de asignaciones */}
-          <Grow in={showContent} timeout={1400}>
+          {/* Sección de asignaciones moderna */}
+          <Grow in={showContent} timeout={1200}>
             <Box>
-              <Typography 
-                variant={isMobile ? "h5" : isTablet ? "h4" : "h3"}
-                fontWeight="bold" 
-                sx={{ 
-                  mb: { xs: 2, sm: 3 },
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem', lg: '2rem' }
-                }}
+              <Box 
+                display="flex"
+                alignItems="center"
+                gap={1.5}
+                mb={{ xs: 2.5, sm: 3 }}
               >
-                <Dashboard sx={{ fontSize: 'inherit' }} />
-                Mis Asignaciones
-              </Typography>
+                <ModernIconContainer
+                  sx={{
+                    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                    width: { xs: 40, sm: 48 },
+                    height: { xs: 40, sm: 48 },
+                  }}
+                >
+                  <Dashboard />
+                </ModernIconContainer>
+                <Typography 
+                  variant={isMobile ? "h5" : isTablet ? "h4" : "h3"}
+                  fontWeight="700" 
+                  sx={{ 
+                    fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem', lg: '2.25rem' },
+                    background: 'linear-gradient(135deg, #1f2937, #374151)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >
+                  Panel de Asignaciones
+                </Typography>
+              </Box>
               
-              <Divider sx={{ mb: { xs: 2, sm: 3 } }} />
+              <Divider 
+                sx={{ 
+                  mb: { xs: 2.5, sm: 3 },
+                  background: 'linear-gradient(90deg, #6366f1, transparent)',
+                  height: 2,
+                  borderRadius: 1
+                }} 
+              />
               
               <Paper 
                 elevation={0} 
                 sx={{ 
-                  borderRadius: { xs: '12px', sm: '16px' },
+                  borderRadius: { xs: '16px', sm: '20px', md: '24px' },
                   overflow: 'hidden',
-                  border: '1px solid rgba(0, 0, 0, 0.05)',
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+                  border: '1px solid rgba(99, 102, 241, 0.1)',
+                  boxShadow: '0 10px 40px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(10px)'
                 }}
               >
                 <TeacherAssignments />
@@ -636,7 +761,7 @@ const ActiveSession = () => {
           </Grow>
         </Box>
       </Fade>
-    </ResponsiveContainer>
+    </ModernContainer>
   );
 };
 
