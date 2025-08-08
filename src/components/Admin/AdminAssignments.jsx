@@ -771,7 +771,7 @@ const AdminAssignments = ({ open, onClose }) => {
                                                         </IconButton>
                                                     </Tooltip>
                                                     
-                                                    <Tooltip title="Gestionar Estados de Docentes">
+                                                    <Tooltip title="">
                                                         <IconButton
                                                             size="small"
                                                             onClick={() => handleManageTeacherStates(assignment)}

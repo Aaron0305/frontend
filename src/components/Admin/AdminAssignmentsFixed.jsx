@@ -312,6 +312,38 @@ const AdminAssignments = ({ open, onClose }) => {
         }
     };
 
+    // Confirmar cambios de estado en el modal (siempre habilitado)
+    const handleConfirmTeacherStates = async () => {
+        try {
+            setActionLoading(true);
+
+            // Determinar a quién aplicar y qué estado
+            let targets = assignmentTeachers.filter(t => t.visible !== false);
+
+            if (groupStatus) {
+                const selected = targets.filter(t => t.selected);
+                const applyTo = selected.length > 0 ? selected : targets;
+                targets = applyTo.map(t => ({ ...t, status: groupStatus }));
+            }
+            // Si no hay estado grupal, usamos el estado elegido por fila (teacher.status)
+
+            // Ejecutar actualizaciones (aplicar para todos los targets)
+            const updates = targets.map(t =>
+                updateTeacherStatusInAssignment(selectedAssignment._id, t._id, t.status || 'pending')
+            );
+            await Promise.all(updates);
+
+            // Recargar estados y lista principal
+            await handleManageTeacherStates(selectedAssignment);
+            await loadAssignments();
+            setShowTeacherStatusDialog(false);
+        } catch (error) {
+            setError(error.message || 'Error al confirmar los cambios de estado');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     const getStatusColor = (status) => {
         switch (status) {
             case 'completed':
@@ -1071,7 +1103,7 @@ const AdminAssignments = ({ open, onClose }) => {
                             ) : (
                                 <>
                                     {/* Selección grupal */}
-                                    <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <Box sx={{ mb: 2, p: 2, borderRadius: 2, bgcolor: 'background.default', border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
                                         <FormControlLabel
                                             control={
                                                 <Checkbox
@@ -1083,7 +1115,7 @@ const AdminAssignments = ({ open, onClose }) => {
                                                     }}
                                                 />
                                             }
-                                            label="Seleccionar todos los docentes"
+                                                label={`Seleccionar todos los docentes (${assignmentTeachers.filter(t => t.selected).length}/${assignmentTeachers.filter(t => t.visible !== false).length} seleccionados)`}
                                         />
                                         <FormControl size="small" sx={{ minWidth: 200 }}>
                                             <InputLabel>Estado grupal</InputLabel>
@@ -1091,7 +1123,7 @@ const AdminAssignments = ({ open, onClose }) => {
                                                 label="Estado grupal"
                                                 value={groupStatus || ''}
                                                 onChange={e => setGroupStatus(e.target.value)}
-                                                disabled={!assignmentTeachers.some(t => t.selected)}
+                                                    
                                             >
                                                 <MenuItem value="completed">Entregado</MenuItem>
                                                 <MenuItem value="completed-late">Entregado con Retraso</MenuItem>
@@ -1102,28 +1134,20 @@ const AdminAssignments = ({ open, onClose }) => {
                                         <Button
                                             variant="contained"
                                             color="primary"
-                                            disabled={!assignmentTeachers.some(t => t.selected) || !groupStatus}
-                                            onClick={async () => {
-                                                try {
-                                                    setActionLoading(true);
-                                                    // Actualizar en backend todos los seleccionados
-                                                    const updates = assignmentTeachers.filter(t => t.selected).map(t =>
-                                                        updateTeacherStatusInAssignment(selectedAssignment._id, t._id, groupStatus)
-                                                    );
-                                                    await Promise.all(updates);
-                                                    // Recargar estados y lista principal
-                                                    await handleManageTeacherStates(selectedAssignment);
-                                                    await loadAssignments();
-                                                    setShowTeacherStatusDialog(false);
-                                                } catch (error) {
-                                                    setError(error.message || 'Error al actualizar estados grupales');
-                                                } finally {
-                                                    setActionLoading(false);
-                                                }
-                                            }}
+                                                onClick={handleConfirmTeacherStates}
                                         >
                                             Confirmar cambio de estado
                                         </Button>
+                                            <Button
+                                                variant="text"
+                                                color="inherit"
+                                                onClick={() => {
+                                                    setGroupStatus('');
+                                                    setAssignmentTeachers(prev => prev.map(t => ({ ...t, selected: false })));
+                                                }}
+                                            >
+                                                Limpiar selección
+                                            </Button>
                                     </Box>
     // ...existing code...
                                     <Grid container spacing={2}>
