@@ -106,25 +106,24 @@ const MainProfileCard = styled(Card)(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-  // AGREGADO: Margen superior adicional para la tarjeta principal
   marginTop: theme.spacing(2),
-  
+  minHeight: '180px', // Ajuste de altura mínima más pequeña
   '&:hover': {
     transform: 'translateY(-8px)',
     boxShadow: '0 30px 60px rgba(0,0,0,0.15)',
   },
-  
   [theme.breakpoints.down('sm')]: {
     borderRadius: '16px',
     margin: `${theme.spacing(2)} ${theme.spacing(1)} ${theme.spacing(1)}`,
+    minHeight: '120px',
   },
-  
   [theme.breakpoints.up('sm')]: {
     marginTop: theme.spacing(3),
+    minHeight: '140px',
   },
-  
   [theme.breakpoints.up('md')]: {
     marginTop: theme.spacing(4),
+    minHeight: '180px',
   }
 }));
 
@@ -485,11 +484,11 @@ const ActiveSession = () => {
               <AnimatedGradientBar />
               <CardContent 
                 sx={{ 
-                  p: { xs: 2, sm: 3, md: 4 },
-                  '&:last-child': { pb: { xs: 2, sm: 3, md: 4 } }
+                  p: { xs: 1, sm: 1.5, md: 2 }, // Menos padding
+                  '&:last-child': { pb: { xs: 1, sm: 1.5, md: 2 } }
                 }}
               >
-                <Grid container spacing={{ xs: 2, sm: 3, md: 4 }} alignItems="center">
+                <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }} alignItems="center"> {/* Menos espacio entre elementos */}
                   {/* Avatar */}
                   <Grid 
                     item 

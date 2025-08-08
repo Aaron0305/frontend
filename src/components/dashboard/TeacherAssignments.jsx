@@ -112,9 +112,21 @@ const TeacherAssignments = () => {
             setError('');
             
             let filterStatus = statusFilter;
-            // Si el filtro es 'late', solo mostrar asignaciones entregadas con retraso
+            let customFilter = null;
             if (statusFilter === 'late') {
-                filterStatus = undefined; // No usar el filtro del backend, filtrar en frontend
+                filterStatus = undefined;
+                customFilter = a => (
+                    (a.teacherStatus && a.teacherStatus.adminUpdated && a.teacherStatus.submissionStatus === 'late') ||
+                    a.status === 'late'
+                );
+            }
+            if (statusFilter === 'vencido' || statusFilter === 'not-delivered' || statusFilter === 'overdue') {
+                filterStatus = undefined;
+                customFilter = a => (
+                    (a.teacherStatus && a.teacherStatus.adminUpdated && a.teacherStatus.submissionStatus === 'closed') ||
+                    a.status === 'closed' ||
+                    (a.status === 'pending' && new Date(a.closeDate) < new Date())
+                );
             }
             const params = {
                 status: filterStatus,
@@ -127,14 +139,8 @@ const TeacherAssignments = () => {
             const response = await getTeacherAssignments(params);
 
             let filteredAssignments = response.assignments || [];
-            if (statusFilter === 'late') {
-                filteredAssignments = filteredAssignments.filter(a => {
-                    // Si el admin actualizó el estado y es 'late'
-                    if (a.teacherStatus && a.teacherStatus.adminUpdated && a.teacherStatus.submissionStatus === 'late') return true;
-                    // O si el estado propio es 'late'
-                    if (a.status === 'late') return true;
-                    return false;
-                });
+            if (customFilter) {
+                filteredAssignments = filteredAssignments.filter(customFilter);
             }
 
             if (response.success) {
@@ -307,28 +313,7 @@ const TeacherAssignments = () => {
         }
     };
 
-    // Animation variants
-    const cardVariants = {
-        hidden: { opacity: 0, y: 20 },
-        visible: { 
-            opacity: 1, 
-            y: 0,
-            transition: {
-                duration: 0.4,
-                ease: "easeOut"
-            }
-        }
-    };
-
-    const statsVariants = {
-        hover: {
-            y: -5,
-            transition: {
-                duration: 0.2,
-                ease: "easeOut"
-            }
-        }
-    };
+    // ...existing code...
 
     if (loading && assignments.length === 0) {
         return (
@@ -410,7 +395,7 @@ const TeacherAssignments = () => {
             {/* Stats cards with animations */}
             {stats && (
                 <Grid container spacing={2} sx={{ mb: 3 }}>
-                    {[
+                    {[ 
                         { 
                             icon: <AssignmentIcon sx={{ fontSize: 40 }} />, 
                             value: stats.total, 
@@ -446,7 +431,13 @@ const TeacherAssignments = () => {
                         },
                         { 
                             icon: <Warning sx={{ fontSize: 40 }} />, 
-                            value: stats.overdue, 
+                            value: Array.isArray(assignments)
+                                ? assignments.filter(a => (
+                                    (a.teacherStatus && a.teacherStatus.adminUpdated && a.teacherStatus.submissionStatus === 'closed') ||
+                                    a.status === 'closed' ||
+                                    (a.status === 'pending' && new Date(a.closeDate) < new Date())
+                                )).length
+                                : (typeof stats.overdue === 'number' ? stats.overdue : 0),
                             label: 'No Entregadas',
                             color: 'error',
                             filterValue: 'vencido'
@@ -638,7 +629,6 @@ const TeacherAssignments = () => {
                         <TableBody>
                             {assignments.map((assignment) => {
                                 const isOverdue = assignment.status === 'pending' && new Date(assignment.dueDate) < new Date();
-                                const status = isOverdue ? 'vencido' : assignment.status;
                                 
                                 return (
                                     <TableRow 
