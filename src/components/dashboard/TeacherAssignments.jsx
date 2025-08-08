@@ -111,10 +111,10 @@ const TeacherAssignments = () => {
             setLoading(true);
             setError('');
             
+            // Mapear filtros al backend; para filtros calculados localmente, no enviar status
             let filterStatus = statusFilter;
-            // Si el filtro es 'late', solo mostrar asignaciones entregadas con retraso
-            if (statusFilter === 'late') {
-                filterStatus = undefined; // No usar el filtro del backend, filtrar en frontend
+            if (statusFilter === 'completed' || statusFilter === 'completed-late' || statusFilter === 'not-delivered' || statusFilter === 'all') {
+                filterStatus = undefined; // se filtrará en el cliente
             }
             const params = {
                 status: filterStatus,
@@ -127,14 +127,20 @@ const TeacherAssignments = () => {
             const response = await getTeacherAssignments(params);
 
             let filteredAssignments = response.assignments || [];
-            if (statusFilter === 'late') {
-                filteredAssignments = filteredAssignments.filter(a => {
-                    // Si el admin actualizó el estado y es 'late'
-                    if (a.teacherStatus && a.teacherStatus.adminUpdated && a.teacherStatus.submissionStatus === 'late') return true;
-                    // O si el estado propio es 'late'
-                    if (a.status === 'late') return true;
-                    return false;
-                });
+            // Filtros locales para estados específicos
+            if (statusFilter === 'completed') {
+                // Usar el status ya mapeado por el backend para el docente actual
+                filteredAssignments = filteredAssignments.filter(a => a.status === 'completed');
+            } else if (statusFilter === 'completed-late') {
+                filteredAssignments = filteredAssignments.filter(a => (
+                    (a.teacherStatus && a.teacherStatus.adminUpdated && a.teacherStatus.submissionStatus === 'late') ||
+                    a.status === 'completed-late'
+                ));
+            } else if (statusFilter === 'not-delivered') {
+                filteredAssignments = filteredAssignments.filter(a => (
+                    (a.teacherStatus && a.teacherStatus.adminUpdated && a.teacherStatus.submissionStatus === 'closed') ||
+                    a.status === 'not-delivered'
+                ));
             }
 
             if (response.success) {
@@ -186,9 +192,11 @@ const TeacherAssignments = () => {
             }
         }
         
-        // Lógica original si no hay estado específico del admin
+        // Lógica cuando el propio assignment ya trae el estado mapeado desde backend
         const { status, dueDate, closeDate } = assignment;
         if (status === 'completed') return 'success';
+        if (status === 'completed-late') return 'warning';
+        if (status === 'not-delivered') return 'error';
         
         const now = new Date();
         const due = new Date(dueDate);
@@ -220,9 +228,11 @@ const TeacherAssignments = () => {
             }
         }
         
-        // Lógica original si no hay estado específico del admin
+        // Lógica cuando el propio assignment ya trae el estado mapeado desde backend
         const { status, dueDate, closeDate } = assignment;
-        if (status === 'completed') return 'Completado';
+        if (status === 'completed') return 'Entregado';
+        if (status === 'completed-late') return 'Entregado con Retraso';
+        if (status === 'not-delivered') return 'No Entregado';
         if (status === 'pending') {
             const now = new Date();
             const due = new Date(dueDate);
@@ -434,22 +444,17 @@ const TeacherAssignments = () => {
                         },
                         { 
                             icon: <CheckCircle sx={{ fontSize: 40 }} />, 
-                            value: Array.isArray(assignments)
-                                ? assignments.filter(a => (
-                                    (a.teacherStatus && a.teacherStatus.adminUpdated && a.teacherStatus.submissionStatus === 'late') ||
-                                    a.status === 'late'
-                                )).length
-                                : (typeof stats.late === 'number' ? stats.late : 0),
+                            value: typeof stats.completedLate === 'number' ? stats.completedLate : 0,
                             label: 'Entregadas con Retraso',
                             color: 'warning',
-                            filterValue: 'late'
+                            filterValue: 'completed-late'
                         },
                         { 
                             icon: <Warning sx={{ fontSize: 40 }} />, 
-                            value: stats.overdue, 
+                            value: typeof stats.notDelivered === 'number' ? stats.notDelivered : (stats.overdue || 0), 
                             label: 'No Entregadas',
                             color: 'error',
-                            filterValue: 'vencido'
+                            filterValue: 'not-delivered'
                         }
                     ].map((stat, index) => (
                         <Grid item xs={6} sm={3} key={index}>
