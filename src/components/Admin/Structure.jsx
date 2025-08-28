@@ -15,7 +15,7 @@ function TeacherRow({ user, onStatClick }) {
                 if (!user?._id) return;
                 const token = localStorage.getItem('token');
                 // 1. Obtener todas las asignaciones
-                const resAll = await fetch('http://localhost:3001/api/assignments/admin/all', {
+                const resAll = await fetch(`${API_CONFIG.ASSIGNMENTS_URL}/admin/all`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -27,7 +27,7 @@ function TeacherRow({ user, onStatClick }) {
                 let entregadas = 0, retraso = 0, pendientes = 0, noEntregadas = 0, total = 0;
                 // 2. Para cada asignación, obtener el estado de todos los docentes
                 await Promise.all(assignments.map(async (assignment) => {
-                    const resStatus = await fetch(`http://localhost:3001/api/assignments/${assignment._id}/teachers-status`, {
+                    const resStatus = await fetch(`${API_CONFIG.ASSIGNMENTS_URL}/${assignment._id}/teachers-status`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
@@ -201,6 +201,7 @@ import { styled, keyframes } from '@mui/material/styles';
 import Asignation from './Asignation';
 import AdminAssignments from './AdminAssignmentsFixed';
 import AdminErrorBoundary from './AdminErrorBoundary';
+import { API_CONFIG } from '../../config/api.js';
 
 // Animaciones personalizadas
 const pulse = keyframes`
@@ -456,7 +457,7 @@ export default function Structure() {
             if (!token || !userId) return null;
 
             // 1. Obtener todas las asignaciones
-            const resAll = await fetch('http://localhost:3001/api/assignments/admin/all', {
+            const resAll = await fetch(`${API_CONFIG.ASSIGNMENTS_URL}/admin/all`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -472,7 +473,7 @@ export default function Structure() {
             // 2. Para cada asignación, obtener el estado del docente específico
             await Promise.all(assignments.map(async (assignment) => {
                 try {
-                    const resStatus = await fetch(`http://localhost:3001/api/assignments/${assignment._id}/teachers-status`, {
+                    const resStatus = await fetch(`${API_CONFIG.ASSIGNMENTS_URL}/${assignment._id}/teachers-status`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
@@ -515,7 +516,7 @@ export default function Structure() {
         if (users.length > 0 && !force) return; // Evita recargas innecesarias
         try {
             setRefreshing(true);
-            const response = await fetch('http://localhost:3001/api/users', {
+            const response = await fetch(API_CONFIG.USERS_URL, {
                 headers: {
                     'Cache-Control': force ? 'no-cache' : 'max-age=300',
                     'Pragma': force ? 'no-cache' : 'cache'
@@ -536,7 +537,7 @@ export default function Structure() {
                 }
                 // Fetch de registros individuales si no vienen incluidos
                 try {
-                    const res = await fetch(`http://localhost:3001/api/users/${user._id}/registros`);
+                    const res = await fetch(`${API_CONFIG.USERS_URL}/${user._id}/registros`);
                     if (res.ok) {
                         const registrosData = await res.json();
                         return { ...user, registros: Array.isArray(registrosData) ? registrosData : [] };
@@ -583,7 +584,7 @@ export default function Structure() {
             }
             
             console.log('Realizando petición a la API de estadísticas');
-            const response = await fetch('http://localhost:3001/api/stats/teachers', {
+            const response = await fetch(`${API_CONFIG.STATS_URL}/teachers`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'

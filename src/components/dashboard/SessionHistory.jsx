@@ -33,6 +33,7 @@ import {
   CheckCircle,
   Today
 } from '@mui/icons-material';
+import { API_CONFIG } from '../../config/api.js';
 
 // Estilos personalizados
 const StyledCalendarContainer = styled(Paper)(() => ({
@@ -206,7 +207,7 @@ const ActivityDetails = ({ registro }) => {
                   variant="outlined"
                   size="small"
                   startIcon={<AttachFile />}
-                  href={`http://localhost:3001${evidencia.url}`}
+                                      href={evidencia.url}
                   target="_blank"
                   sx={{
                     borderRadius: '20px',

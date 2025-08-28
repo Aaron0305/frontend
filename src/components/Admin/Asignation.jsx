@@ -45,6 +45,7 @@ import {
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { AuthContext } from '../../contexts/AuthContext';
+import { API_CONFIG } from '../../config/api.js';
 import { DatePicker, TimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { es } from 'date-fns/locale';
@@ -239,7 +240,7 @@ export default function Asignation({ open, onClose, users = [] }) {
 
             // Verificar que el token sea válido
             console.log('  Verificando estado de autenticación...');
-            const authCheckResponse = await fetch('http://localhost:3001/api/assignments/auth-status', {
+            const authCheckResponse = await fetch(`${API_CONFIG.ASSIGNMENTS_URL}/auth-status`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -287,14 +288,14 @@ export default function Asignation({ open, onClose, users = [] }) {
             }
 
             console.log('🚀 Enviando petición al servidor...');
-            console.log('URL:', 'http://localhost:3001/api/assignments');
+            console.log('URL:', API_CONFIG.ASSIGNMENTS_URL);
             console.log('Token presente:', !!token);
             console.log('FormData entries:');
             for (let [key, value] of formData.entries()) {
                 console.log(`  ${key}:`, typeof value === 'object' && value instanceof File ? `File: ${value.name}` : value);
             }
             
-            const response = await fetch('http://localhost:3001/api/assignments', {
+            const response = await fetch(API_CONFIG.ASSIGNMENTS_URL, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -339,7 +340,7 @@ export default function Asignation({ open, onClose, users = [] }) {
             
             // Mejorar mensajes de error comunes
             if (err.message.includes('Failed to fetch')) {
-                errorMessage = 'No se pudo conectar con el servidor. Verifique que el servidor esté ejecutándose en http://localhost:3001';
+                errorMessage = 'No se pudo conectar con el servidor. Verifique que el servidor esté ejecutándose correctamente.';
             } else if (err.message.includes('NetworkError')) {
                 errorMessage = 'Error de red. Verifique su conexión a internet y que el servidor esté disponible.';
             } else if (err.message.includes('401')) {
