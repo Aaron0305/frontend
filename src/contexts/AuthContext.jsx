@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient, { API_CONFIG } from '../config/api.js';
 import setupAxiosInterceptors from '../utils/axiosDebugger';
 
 export const AuthContext = createContext();
@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:3001/api/auth/login', {
+              const response = await apiClient.post('/api/auth/login', {
         email,
         password
       });
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await axios.post('http://localhost:3001/api/auth/register', userData, {
+              const response = await apiClient.post('/api/auth/register', userData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         }
@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      const response = await axios.get('http://localhost:3001/api/auth/verify', {
+              const response = await apiClient.get('/api/auth/verify', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -141,7 +141,7 @@ export const AuthProvider = ({ children }) => {
 
   const forgotPassword = async (email) => {
     try {
-      const response = await axios.post('http://localhost:3001/api/auth/forgot-password', {
+              const response = await apiClient.post('/api/auth/forgot-password', {
         email
       });
       
@@ -156,7 +156,7 @@ export const AuthProvider = ({ children }) => {
 
   const resetPassword = async (token, newPassword) => {
     try {
-      const response = await axios.post('http://localhost:3001/api/auth/reset-password', {
+              const response = await apiClient.post('/api/auth/reset-password', {
         token,
         newPassword
       });

@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
+import { API_CONFIG } from '../../config/api.js';
 import {
   TextField,
   Button,
@@ -128,7 +129,7 @@ export default function Register() {
     const fetchCarreras = async () => {
       setIsLoadingCarreras(true);
       try {
-        const response = await fetch('http://localhost:3001/api/carreras');
+        const response = await fetch(`${API_CONFIG.CARRERAS_URL}`);
         if (!response.ok) {
           throw new Error('Error al cargar carreras');
         }

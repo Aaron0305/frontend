@@ -1,6 +1,6 @@
-import axios from 'axios';
+import apiClient, { API_CONFIG } from '../config/api.js';
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = API_CONFIG.HOURS_URL;
 
 export const getSummary = async (userId) => {
   try {
@@ -8,7 +8,7 @@ export const getSummary = async (userId) => {
       throw new Error('Usuario no proporcionado');
     }
 
-    const response = await axios.get(`${API_URL}/hours/summary/${userId}`);
+    const response = await apiClient.get(`/api/hours/summary/${userId}`);
     return response.data;
   } catch (error) {
     console.error('Error al obtener el resumen:', error);
@@ -23,7 +23,7 @@ export const getSummary = async (userId) => {
 
 export const createHourRecord = async (data) => {
   try {
-    const response = await axios.post(`${API_URL}/hours/record`, data);
+    const response = await apiClient.post('/api/hours/record', data);
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Error al registrar horas');

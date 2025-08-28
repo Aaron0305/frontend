@@ -1,13 +1,11 @@
-import axios from 'axios';
+import apiClient, { API_CONFIG } from '../config/api.js';
 
-const API_URL = 'http://localhost:3001/api/assignments';
+const API_URL = API_CONFIG.ASSIGNMENTS_URL;
 
 // Configurar token de autorización
 const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
     return {
         headers: {
-            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
         }
     };
@@ -31,7 +29,7 @@ export const getAdminAllAssignments = async (params = {}) => {
         console.log('🔍 Making API request to:', url);
         console.log('📋 Query params:', params);
         
-        const response = await axios.get(url, getAuthHeaders());
+        const response = await apiClient.get(url.replace(API_URL, '/api/assignments'), getAuthHeaders());
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al obtener las asignaciones' };
@@ -40,7 +38,7 @@ export const getAdminAllAssignments = async (params = {}) => {
 
 export const getAdminAssignmentStats = async () => {
     try {
-        const response = await axios.get(`${API_URL}/admin/stats`, getAuthHeaders());
+        const response = await apiClient.get('/api/assignments/admin/stats');
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al obtener las estadísticas' };
@@ -49,11 +47,7 @@ export const getAdminAssignmentStats = async () => {
 
 export const markAssignmentCompletedByAdmin = async (assignmentId) => {
     try {
-        const response = await axios.patch(
-            `${API_URL}/admin/${assignmentId}/complete`,
-            {},
-            getAuthHeaders()
-        );
+        const response = await apiClient.patch(`/api/assignments/admin/${assignmentId}/complete`);
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al marcar como completada' };
@@ -62,11 +56,7 @@ export const markAssignmentCompletedByAdmin = async (assignmentId) => {
 
 export const updateAssignmentByAdmin = async (assignmentId, assignmentData) => {
     try {
-        const response = await axios.put(
-            `${API_URL}/admin/${assignmentId}`,
-            assignmentData,
-            getAuthHeaders()
-        );
+        const response = await apiClient.put(`/api/assignments/admin/${assignmentId}`, assignmentData);
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al actualizar la asignación' };
@@ -76,10 +66,7 @@ export const updateAssignmentByAdmin = async (assignmentId, assignmentData) => {
 // Nuevas funciones para gestión de estados de docentes
 export const getTeachersStatusForAssignment = async (assignmentId) => {
     try {
-        const response = await axios.get(
-            `${API_URL}/${assignmentId}/teachers-status`,
-            getAuthHeaders()
-        );
+        const response = await apiClient.get(`/api/assignments/${assignmentId}/teachers-status`);
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al obtener los estados de los docentes' };
@@ -88,11 +75,7 @@ export const getTeachersStatusForAssignment = async (assignmentId) => {
 
 export const updateTeacherStatusInAssignment = async (assignmentId, teacherId, status) => {
     try {
-        const response = await axios.patch(
-            `${API_URL}/${assignmentId}/teacher-status`,
-            { teacherId, status },
-            getAuthHeaders()
-        );
+        const response = await apiClient.patch(`/api/assignments/${assignmentId}/teacher-status`, { teacherId, status });
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al actualizar el estado del docente' };
@@ -102,7 +85,7 @@ export const updateTeacherStatusInAssignment = async (assignmentId, teacherId, s
 // Funciones para usuarios generales
 export const getAllAssignments = async () => {
     try {
-        const response = await axios.get(`${API_URL}/all`, getAuthHeaders());
+        const response = await apiClient.get('/api/assignments/all');
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al obtener las asignaciones' };
@@ -111,7 +94,7 @@ export const getAllAssignments = async () => {
 
 export const getUserAssignments = async () => {
     try {
-        const response = await axios.get(`${API_URL}/my-assignments`, getAuthHeaders());
+        const response = await apiClient.get('/api/assignments/my-assignments');
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al obtener mis asignaciones' };
@@ -120,11 +103,7 @@ export const getUserAssignments = async () => {
 
 export const updateAssignmentStatus = async (assignmentId, status) => {
     try {
-        const response = await axios.patch(
-            `${API_URL}/${assignmentId}/status`,
-            { status },
-            getAuthHeaders()
-        );
+        const response = await apiClient.patch(`/api/assignments/${assignmentId}/status`, { status });
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al actualizar el estado' };
@@ -133,7 +112,7 @@ export const updateAssignmentStatus = async (assignmentId, status) => {
 
 export const getAssignmentById = async (assignmentId) => {
     try {
-        const response = await axios.get(`${API_URL}/${assignmentId}`, getAuthHeaders());
+        const response = await apiClient.get(`/api/assignments/${assignmentId}`);
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al obtener la asignación' };
@@ -142,7 +121,7 @@ export const getAssignmentById = async (assignmentId) => {
 
 export const getUserDashboardStats = async () => {
     try {
-        const response = await axios.get(`${API_URL}/dashboard-stats`, getAuthHeaders());
+        const response = await apiClient.get('/api/assignments/dashboard-stats');
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al obtener las estadísticas del dashboard' };
@@ -152,7 +131,7 @@ export const getUserDashboardStats = async () => {
 export const getFilteredAssignments = async (filters) => {
     try {
         const queryParams = new URLSearchParams(filters).toString();
-        const response = await axios.get(`${API_URL}/filtered?${queryParams}`, getAuthHeaders());
+        const response = await apiClient.get(`/api/assignments/filtered?${queryParams}`);
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al obtener las asignaciones filtradas' };
@@ -162,7 +141,7 @@ export const getFilteredAssignments = async (filters) => {
 // Funciones para docentes
 export const getTeacherAssignmentStats = async () => {
     try {
-        const response = await axios.get(`${API_URL}/teacher/stats`, getAuthHeaders());
+        const response = await apiClient.get('/api/assignments/teacher/stats');
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al obtener las estadísticas del docente' };
@@ -172,7 +151,7 @@ export const getTeacherAssignmentStats = async () => {
 export const getTeacherFilteredAssignments = async (filters) => {
     try {
         const queryParams = new URLSearchParams(filters).toString();
-        const response = await axios.get(`${API_URL}/teacher/assignments?${queryParams}`, getAuthHeaders());
+        const response = await apiClient.get(`/api/assignments/teacher/assignments?${queryParams}`);
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al obtener las asignaciones del docente' };
@@ -191,11 +170,7 @@ export const getAllTeachersStats = async () => {
 
 export const markAssignmentCompleted = async (assignmentId) => {
     try {
-        const response = await axios.patch(
-            `${API_URL}/teacher/${assignmentId}/complete`,
-            {},
-            getAuthHeaders()
-        );
+        const response = await apiClient.patch(`/api/assignments/teacher/${assignmentId}/complete`);
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al marcar como completada' };
@@ -205,7 +180,7 @@ export const markAssignmentCompleted = async (assignmentId) => {
 // Función para crear asignaciones
 export const createAssignment = async (assignmentData) => {
     try {
-        const response = await axios.post(`${API_URL}/`, assignmentData, getAuthHeaders());
+        const response = await apiClient.post('/api/assignments', assignmentData);
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Error al crear la asignación' };
