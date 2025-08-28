@@ -267,9 +267,7 @@ export default function Register() {
       });
       
       if (foto) {
-        const fileExtension = foto.name.split('.').pop();
-        const uniqueFileName = `${formData.numeroControl}_${Date.now()}.${fileExtension}`;
-        formDataToSend.append('fotoPerfil', foto, uniqueFileName);
+        formDataToSend.append('fotoPerfil', foto);
       }
 
       console.log('Datos de registro a enviar:', Object.fromEntries(formDataToSend));

@@ -27,7 +27,10 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('user', JSON.stringify(user));
         setCurrentUser(user);
         setRetryCount(0); // Reset retry count on successful login
-        return { success: true, user };
+        
+        // Determinar la ruta de redirección basada en el rol
+        const redirectPath = user.role === 'admin' ? '/admin-structure' : '/dashboard';
+        return { success: true, user, redirectPath };
       }
       
       throw new Error('Credenciales inválidas');
@@ -77,6 +80,18 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(null);
       setLoading(false);
       return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(savedUser);
+      setCurrentUser(parsedUser);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error parsing saved user:', err);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setCurrentUser(null);
+      setLoading(false);
     }
 
     try {

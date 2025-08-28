@@ -68,8 +68,8 @@ import ScheduledAssignments from './ScheduledAssignmentsSimple';
 // Custom animated components
 const AnimatedBadge = motion(Badge);
 
-const AdminAssignments = ({ open, onClose }) => {
-    console.log('🔄 AdminAssignmentsFixed - Rendering with props:', { open, onClose: !!onClose });
+const AdminAssignments = ({ open, onClose, initialFilter }) => {
+    console.log('🔄 AdminAssignmentsFixed - Rendering with props:', { open, onClose: !!onClose, initialFilter });
     
     const theme = useTheme();
     console.log('🎨 Theme loaded:', !!theme);
@@ -179,6 +179,25 @@ const AdminAssignments = ({ open, onClose }) => {
             setIsRefreshing(false);
         }
     }, [statusFilter, searchTerm, sortBy, page, teacherFilter]);
+
+    // Aplicar filtro inicial cuando se abre el diálogo
+    useEffect(() => {
+        if (open && initialFilter) {
+            console.log('🔄 Applying initial filter:', initialFilter);
+            
+            // Aplicar los filtros desde initialFilter
+            if (initialFilter.teacherId) {
+                setTeacherFilter(initialFilter.teacherId);
+            }
+            if (initialFilter.statusFilter) {
+                setStatusFilter(initialFilter.statusFilter);
+            }
+        } else if (open && !initialFilter) {
+            // Resetear filtros si no hay filtro inicial
+            setTeacherFilter('all');
+            setStatusFilter('all');
+        }
+    }, [open, initialFilter]);
 
     // Cargar datos cuando se abre el diálogo
     useEffect(() => {
@@ -392,6 +411,24 @@ const AdminAssignments = ({ open, onClose }) => {
         }
     };
 
+    const formatDateCompact = (dateString) => {
+        try {
+            if (!dateString || dateString === 'Invalid Date') return 'N/A';
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'N/A';
+            return date.toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (error) {
+            console.error('Error formatting compact date:', error);
+            return 'N/A';
+        }
+    };
+
     const [groupStatus, setGroupStatus] = React.useState('');
     // Si no está abierto, no renderizar nada
     if (!open) {
@@ -406,7 +443,6 @@ const AdminAssignments = ({ open, onClose }) => {
         error: !!error,
         teachers: teachers.length
     });
-    // ...existing code...
     return (
             <Dialog
                 open={open}
@@ -450,12 +486,61 @@ const AdminAssignments = ({ open, onClose }) => {
                     </Button> */}
                 </Box>
                 <IconButton 
-                    onClick={onClose}
+                    onClick={() => {
+                        // Resetear filtros al cerrar
+                        setTeacherFilter('all');
+                        setStatusFilter('all');
+                        setSearchTerm('');
+                        setPage(1);
+                        onClose();
+                    }}
                     sx={{ color: 'white' }}
                 >
                     <Close />
                 </IconButton>
             </DialogTitle>
+
+            {/* Indicador de filtro activo */}
+            {initialFilter && initialFilter.teacherId && (
+                <Box sx={{ 
+                    bgcolor: 'primary.main', 
+                    color: 'white', 
+                    px: 3, 
+                    py: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                }}>
+                    <Person />
+                    <Typography variant="body2">
+                        Filtrando por: <strong>{initialFilter.teacherName}</strong>
+                        {initialFilter.statusFilter && initialFilter.statusFilter !== 'all' && (
+                            <> - Estado: <strong>{getStatusLabel(initialFilter.statusFilter)}</strong></>
+                        )}
+                    </Typography>
+                    <Button
+                        size="small"
+                        variant="outlined"
+                        sx={{ 
+                            ml: 2, 
+                            color: 'white', 
+                            borderColor: 'white',
+                            '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                borderColor: 'white'
+                            }
+                        }}
+                        onClick={() => {
+                            setTeacherFilter('all');
+                            setStatusFilter('all');
+                            setSearchTerm('');
+                            setPage(1);
+                        }}
+                    >
+                        Limpiar Filtros
+                    </Button>
+                </Box>
+            )}
 
             <DialogContent sx={{ p: 3 }}>
                 {/* Estadísticas generales */}
@@ -670,16 +755,27 @@ const AdminAssignments = ({ open, onClose }) => {
                         </Typography>
                     </Paper>
                 ) : (
-                    <TableContainer component={Paper} sx={{ borderRadius: 2, mb: 3 }}>
-                        <Table stickyHeader>
+                    <TableContainer 
+                        component={Paper} 
+                        sx={{ 
+                            borderRadius: 2, 
+                            mb: 3,
+                            maxHeight: '70vh',
+                            overflowX: 'auto',
+                            '& .MuiTable-root': {
+                                minWidth: '1000px'
+                            }
+                        }}
+                    >
+                        <Table stickyHeader size="medium">
                             <TableHead>
                                 <TableRow>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>Título</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>Docente</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>Estado</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>Fecha de Entrega</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>Fecha de Cierre</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>Acciones</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', width: '25%', maxWidth: '300px' }}>Título</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', width: '20%', maxWidth: '200px' }}>Docente</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', width: '12%', maxWidth: '120px' }}>Estado</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', width: '15%', maxWidth: '150px' }}>Fecha de Entrega</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', width: '15%', maxWidth: '150px' }}>Fecha de Cierre</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', width: '13%', maxWidth: '130px' }}>Detalles</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -690,36 +786,80 @@ const AdminAssignments = ({ open, onClose }) => {
                                             hover
                                             sx={{
                                                 '&:last-child td, &:last-child th': { border: 0 },
-                                                borderLeft: `4px solid ${theme?.palette?.[getStatusColor(assignment.status)]?.main || '#ccc'}`
+                                                borderLeft: `4px solid ${theme?.palette?.[getStatusColor(assignment.status)]?.main || '#ccc'}`,
+                                                height: '72px',
+                                                '& .MuiTableCell-root': {
+                                                    padding: '8px 12px'
+                                                }
                                             }}
                                         >
-                                            <TableCell>
-                                                <Typography variant="subtitle2" sx={{ fontWeight: 'medium' }}>
+                                            <TableCell sx={{ maxWidth: '300px', padding: '12px 16px' }}>
+                                                <Typography 
+                                                    variant="subtitle2" 
+                                                    sx={{ 
+                                                        fontWeight: 'medium',
+                                                        display: '-webkit-box',
+                                                        WebkitLineClamp: 1,
+                                                        WebkitBoxOrient: 'vertical',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        lineHeight: '1.2',
+                                                        mb: 0.5
+                                                    }}
+                                                    title={assignment.title}
+                                                >
                                                     {assignment.title}
                                                 </Typography>
-                                                <Typography variant="body2" color="text.secondary" sx={{ 
-                                                    display: '-webkit-box',
-                                                    WebkitLineClamp: 2,
-                                                    WebkitBoxOrient: 'vertical',
-                                                    overflow: 'hidden'
-                                                }}>
+                                                <Typography 
+                                                    variant="caption" 
+                                                    color="text.secondary" 
+                                                    sx={{ 
+                                                        display: '-webkit-box',
+                                                        WebkitLineClamp: 2,
+                                                        WebkitBoxOrient: 'vertical',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        lineHeight: '1.1',
+                                                        fontSize: '0.75rem'
+                                                    }}
+                                                    title={assignment.description}
+                                                >
                                                     {assignment.description}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell sx={{ maxWidth: '200px', padding: '12px 16px' }}>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                     <School sx={{ fontSize: 16, color: 'text.secondary' }} />
-                                                    <Box>
+                                                    <Box sx={{ minWidth: 0, flex: 1 }}>
                                                         {(() => {
                                                             if (teacherFilter !== 'all') {
                                                                 const selectedTeacher = assignment.assignedTo?.find(teacher => teacher._id === teacherFilter);
                                                                 if (selectedTeacher) {
                                                                     return (
                                                                         <>
-                                                                            <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                                                                            <Typography 
+                                                                                variant="body2" 
+                                                                                sx={{ 
+                                                                                    fontWeight: 'medium',
+                                                                                    overflow: 'hidden',
+                                                                                    textOverflow: 'ellipsis',
+                                                                                    whiteSpace: 'nowrap'
+                                                                                }}
+                                                                                title={`${selectedTeacher.nombre} ${selectedTeacher.apellidoPaterno} ${selectedTeacher.apellidoMaterno}`}
+                                                                            >
                                                                                 {`${selectedTeacher.nombre} ${selectedTeacher.apellidoPaterno} ${selectedTeacher.apellidoMaterno}`}
                                                                             </Typography>
-                                                                            <Typography variant="caption" color="text.secondary">
+                                                                            <Typography 
+                                                                                variant="caption" 
+                                                                                color="text.secondary"
+                                                                                sx={{ 
+                                                                                    overflow: 'hidden',
+                                                                                    textOverflow: 'ellipsis',
+                                                                                    whiteSpace: 'nowrap',
+                                                                                    display: 'block'
+                                                                                }}
+                                                                                title={selectedTeacher.email}
+                                                                            >
                                                                                 {selectedTeacher.email}
                                                                             </Typography>
                                                                         </>
@@ -731,11 +871,30 @@ const AdminAssignments = ({ open, onClose }) => {
                                                                 const firstTeacher = assignment.assignedTo[0];
                                                                 return (
                                                                     <>
-                                                                        <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                                                                        <Typography 
+                                                                            variant="body2" 
+                                                                            sx={{ 
+                                                                                fontWeight: 'medium',
+                                                                                overflow: 'hidden',
+                                                                                textOverflow: 'ellipsis',
+                                                                                whiteSpace: 'nowrap'
+                                                                            }}
+                                                                            title={`${firstTeacher.nombre} ${firstTeacher.apellidoPaterno} ${firstTeacher.apellidoMaterno}${assignment.assignedTo.length > 1 ? ` +${assignment.assignedTo.length - 1} más` : ''}`}
+                                                                        >
                                                                             {`${firstTeacher.nombre} ${firstTeacher.apellidoPaterno} ${firstTeacher.apellidoMaterno}`}
                                                                             {assignment.assignedTo.length > 1 && ` +${assignment.assignedTo.length - 1} más`}
                                                                         </Typography>
-                                                                        <Typography variant="caption" color="text.secondary">
+                                                                        <Typography 
+                                                                            variant="caption" 
+                                                                            color="text.secondary"
+                                                                            sx={{ 
+                                                                                overflow: 'hidden',
+                                                                                textOverflow: 'ellipsis',
+                                                                                whiteSpace: 'nowrap',
+                                                                                display: 'block'
+                                                                            }}
+                                                                            title={firstTeacher.email}
+                                                                        >
                                                                             {firstTeacher.email}
                                                                         </Typography>
                                                                     </>
@@ -756,26 +915,44 @@ const AdminAssignments = ({ open, onClose }) => {
                                                     </Box>
                                                 </Box>
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell sx={{ maxWidth: '120px', padding: '12px 8px' }}>
                                                 <Chip
                                                     label={getStatusLabel(assignment.status)}
                                                     color={getStatusColor(assignment.status)}
                                                     size="small"
-                                                    sx={{ fontWeight: 'bold' }}
+                                                    sx={{ 
+                                                        fontWeight: 'bold',
+                                                        fontSize: '0.75rem',
+                                                        height: '24px'
+                                                    }}
                                                 />
                                             </TableCell>
-                                            <TableCell>
-                                                <Typography variant="body2">
-                                                    {formatDateWithTime(assignment.dueDate)}
+                                            <TableCell sx={{ maxWidth: '150px', padding: '12px 8px' }}>
+                                                <Typography 
+                                                    variant="caption" 
+                                                    sx={{ 
+                                                        fontSize: '0.75rem',
+                                                        lineHeight: '1.2'
+                                                    }}
+                                                    title={formatDateWithTime(assignment.dueDate)}
+                                                >
+                                                    {formatDateCompact(assignment.dueDate)}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell>
-                                                <Typography variant="body2">
-                                                    {formatDateWithTime(assignment.closeDate)}
+                                            <TableCell sx={{ maxWidth: '150px', padding: '12px 8px' }}>
+                                                <Typography 
+                                                    variant="caption" 
+                                                    sx={{ 
+                                                        fontSize: '0.75rem',
+                                                        lineHeight: '1.2'
+                                                    }}
+                                                    title={formatDateWithTime(assignment.closeDate)}
+                                                >
+                                                    {formatDateCompact(assignment.closeDate)}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell>
-                                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                            <TableCell sx={{ maxWidth: '130px', padding: '12px 8px' }}>
+                                                <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
                                                     <Tooltip title="Ver Detalles">
                                                         <IconButton
                                                             size="small"
@@ -849,7 +1026,7 @@ const AdminAssignments = ({ open, onClose }) => {
                 )}
             </DialogContent>
 
-            {/* Diálogo de detalles de asignación */}
+            {/* Diálogo de detalles rediseñado - Moderno y elegante */}
             <Dialog
                 open={showDetailDialog}
                 onClose={() => setShowDetailDialog(false)}
@@ -857,172 +1034,311 @@ const AdminAssignments = ({ open, onClose }) => {
                 fullWidth
                 PaperProps={{
                     sx: {
-                        borderRadius: 3,
-                        background: `linear-gradient(to bottom, ${theme.palette.background.paper}, ${theme.palette.grey[50]})`
+                        borderRadius: 4,
+                        overflow: 'hidden',
+                        background: 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)',
+                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
                     }
                 }}
             >
                 {selectedAssignment && (
                     <>
+                        {/* Header con azul marino */}
                         <DialogTitle sx={{ 
-                            py: 2,
-                            px: 3,
-                            background: `linear-gradient(to right, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`,
-                            color: 'white',
                             display: 'flex',
                             justifyContent: 'space-between',
-                            alignItems: 'center'
+                            alignItems: 'center',
+                            p: 3,
+                            backgroundColor: '#1e3a8a',
+                            borderBottom: '2px solid #1e40af',
+                            minHeight: '80px'
                         }}>
-                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                {selectedAssignment.title}
-                            </Typography>
+                            <Box sx={{ flex: 1, mr: 2 }}>
+                                <Typography variant="h4" sx={{ 
+                                    fontWeight: 'bold', 
+                                    color: 'white',
+                                    mb: 1,
+                                    fontSize: '1.5rem'
+                                }}>
+                                    <Typography component="span" sx={{ 
+                                        fontWeight: 'normal',
+                                        mr: 1
+                                    }}>
+                                        Título:
+                                    </Typography>
+                                    {selectedAssignment?.title || 'Sin título'}
+                                </Typography>
+                                <Chip
+                                    label={getStatusLabel(selectedAssignment?.status)}
+                                    sx={{ 
+                                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                                        color: 'white',
+                                        fontWeight: 'bold',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: 0.5,
+                                        fontSize: '0.75rem',
+                                        border: '1px solid rgba(255, 255, 255, 0.3)'
+                                    }}
+                                />
+                            </Box>
                             <IconButton 
                                 onClick={() => setShowDetailDialog(false)}
-                                sx={{ color: 'white' }}
+                                size="large"
+                                sx={{ 
+                                    color: 'white',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                                    '&:hover': {
+                                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                        borderColor: 'rgba(255, 255, 255, 0.5)'
+                                    }
+                                }}
                             >
                                 <Close />
                             </IconButton>
                         </DialogTitle>
-                        <DialogContent sx={{ p: 3 }}>
-                            <Box mb={2}>
-                                <Chip
-                                    label={getStatusLabel(selectedAssignment.status)}
-                                    color={getStatusColor(selectedAssignment.status)}
-                                    sx={{ 
-                                        fontWeight: 'bold',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: 1
-                                    }}
-                                />
+
+                        <DialogContent sx={{ p: 0 }}>
+                            {/* Descripción con diseño card */}
+                            <Box sx={{ p: 3, borderBottom: '1px solid', borderColor: 'grey.100' }}>
+                                <Typography variant="h6" sx={{ 
+                                    mb: 2, 
+                                    color: 'text.primary',
+                                    fontWeight: 600,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1
+                                }}>
+                                    📝 Descripción
+                                </Typography>
+                                <Typography variant="body1" sx={{ 
+                                    whiteSpace: 'pre-line',
+                                    lineHeight: 1.7,
+                                    color: 'text.secondary',
+                                    fontSize: '1rem'
+                                }}>
+                                    {selectedAssignment.description}
+                                </Typography>
                             </Box>
-                            
-                            <Typography variant="body1" paragraph sx={{ 
-                                whiteSpace: 'pre-line',
-                                lineHeight: 1.6
-                            }}>
-                                {selectedAssignment.description}
-                            </Typography>
 
-                            <Grid container spacing={3}>
-                                <Grid item xs={12} md={6}>
-                                    <Typography variant="subtitle1" sx={{ 
-                                        mb: 2,
-                                        fontWeight: 'bold',
-                                        color: 'primary.main'
-                                    }}>
-                                        Información del Docente
-                                    </Typography>
-                                    <Box sx={{ 
-                                        p: 2,
-                                        borderRadius: 2,
-                                        background: theme.palette.grey[50],
-                                        boxShadow: theme.shadows[1]
-                                    }}>
-                                        <Typography variant="body1" sx={{ mb: 1 }}>
-                                            <strong>Docente Asignado:</strong> {selectedAssignment.assignedTo && selectedAssignment.assignedTo.length > 0 ? 
-                                                `${selectedAssignment.assignedTo[0].nombre} ${selectedAssignment.assignedTo[0].apellidoPaterno} ${selectedAssignment.assignedTo[0].apellidoMaterno}` :
-                                                'Sin asignar'
-                                            }
-                                        </Typography>
-                                        <Typography variant="body1">
-                                            <strong>Email:</strong> {selectedAssignment.assignedTo && selectedAssignment.assignedTo.length > 0 ?
-                                                selectedAssignment.assignedTo[0].email :
-                                                'Sin email'
-                                            }
-                                        </Typography>
-                                    </Box>
-                                </Grid>
-
-                                <Grid item xs={12} md={6}>
-                                    <Typography variant="subtitle1" sx={{ 
-                                        mb: 2,
-                                        fontWeight: 'bold',
-                                        color: 'primary.main'
-                                    }}>
-                                        Fechas Importantes
-                                    </Typography>
-                                    <Box sx={{ 
-                                        p: 2,
-                                        borderRadius: 2,
-                                        background: theme.palette.grey[50],
-                                        boxShadow: theme.shadows[1]
-                                    }}>
-                                        <Typography variant="body2" sx={{ mb: 1 }}>
-                                            <strong>Fecha de Entrega:</strong> {formatDateWithTime(selectedAssignment.dueDate)}
-                                        </Typography>
-                                        <Typography variant="body2" sx={{ mb: 1 }}>
-                                            <strong>Fecha de Cierre:</strong> {formatDateWithTime(selectedAssignment.closeDate)}
-                                        </Typography>
-                                        <Typography variant="body2">
-                                            <strong>Creado el:</strong> {formatDateWithTime(selectedAssignment.createdAt)}
-                                        </Typography>
-                                    </Box>
-                                </Grid>
-
-                                {selectedAssignment.attachments && selectedAssignment.attachments.length > 0 && (
-                                    <Grid item xs={12}>
-                                        <Typography variant="subtitle1" sx={{ 
-                                            mb: 2,
-                                            fontWeight: 'bold',
-                                            color: 'primary.main'
+                            {/* Información organizada en tarjetas */}
+                            <Box sx={{ p: 3 }}>
+                                <Grid container spacing={3}>
+                                    {/* Tarjeta del Docente */}
+                                    <Grid item xs={12} md={6}>
+                                        <Paper elevation={0} sx={{ 
+                                            p: 3,
+                                            borderRadius: 3,
+                                            background: 'linear-gradient(145deg, #f0f9ff 0%, #e0f2fe 100%)',
+                                            border: '1px solid #bae6fd',
+                                            height: '100%'
                                         }}>
-                                            Archivos Adjuntos
-                                        </Typography>
-                                        <Box sx={{ 
-                                            p: 2,
-                                            borderRadius: 2,
-                                            background: theme.palette.grey[50],
-                                            boxShadow: theme.shadows[1]
+                                            <Typography variant="h6" sx={{ 
+                                                mb: 2, 
+                                                color: 'primary.main',
+                                                fontWeight: 600,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 1
+                                            }}>
+                                                👨‍🏫 Información del Docente
+                                            </Typography>
+                                            <Box sx={{ space: 2 }}>
+                                                <Box sx={{ mb: 2 }}>
+                                                    <Typography variant="caption" sx={{ 
+                                                        color: 'text.secondary',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: 1,
+                                                        fontWeight: 600
+                                                    }}>
+                                                        Docente Asignado
+                                                    </Typography>
+                                                    <Typography variant="body1" sx={{ 
+                                                        fontWeight: 500,
+                                                        color: 'text.primary'
+                                                    }}>
+                                                        {selectedAssignment.assignedTo && selectedAssignment.assignedTo.length > 0 ? 
+                                                            `${selectedAssignment.assignedTo[0].nombre} ${selectedAssignment.assignedTo[0].apellidoPaterno} ${selectedAssignment.assignedTo[0].apellidoMaterno}` :
+                                                            'Sin asignar'
+                                                        }
+                                                    </Typography>
+                                                </Box>
+                                                <Box>
+                                                    <Typography variant="caption" sx={{ 
+                                                        color: 'text.secondary',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: 1,
+                                                        fontWeight: 600
+                                                    }}>
+                                                        Correo Electrónico
+                                                    </Typography>
+                                                    <Typography variant="body1" sx={{ 
+                                                        fontWeight: 500,
+                                                        color: 'text.primary'
+                                                    }}>
+                                                        {selectedAssignment.assignedTo && selectedAssignment.assignedTo.length > 0 ?
+                                                            selectedAssignment.assignedTo[0].email :
+                                                            'Sin email'
+                                                        }
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                        </Paper>
+                                    </Grid>
+
+                                    {/* Tarjeta de Fechas */}
+                                    <Grid item xs={12} md={6}>
+                                        <Paper elevation={0} sx={{ 
+                                            p: 3,
+                                            borderRadius: 3,
+                                            background: 'linear-gradient(145deg, #fef3c7 0%, #fde68a 100%)',
+                                            border: '1px solid #fbbf24',
+                                            height: '100%'
                                         }}>
-                                            <Grid container spacing={1}>
-                                                {selectedAssignment.attachments.map((file, index) => (
-                                                    <Grid item key={index}>
+                                            <Typography variant="h6" sx={{ 
+                                                mb: 2, 
+                                                color: '#d97706',
+                                                fontWeight: 600,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 1
+                                            }}>
+                                                📅 Fechas Importantes
+                                            </Typography>
+                                            <Box sx={{ space: 2 }}>
+                                                <Box sx={{ mb: 2 }}>
+                                                    <Typography variant="caption" sx={{ 
+                                                        color: '#92400e',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: 1,
+                                                        fontWeight: 600
+                                                    }}>
+                                                        Fecha de Entrega
+                                                    </Typography>
+                                                    <Typography variant="body1" sx={{ 
+                                                        fontWeight: 500,
+                                                        color: '#78350f'
+                                                    }}>
+                                                        {formatDateWithTime(selectedAssignment.dueDate)}
+                                                    </Typography>
+                                                </Box>
+                                                <Box sx={{ mb: 2 }}>
+                                                    <Typography variant="caption" sx={{ 
+                                                        color: '#92400e',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: 1,
+                                                        fontWeight: 600
+                                                    }}>
+                                                        Fecha de Cierre
+                                                    </Typography>
+                                                    <Typography variant="body1" sx={{ 
+                                                        fontWeight: 500,
+                                                        color: '#78350f'
+                                                    }}>
+                                                        {formatDateWithTime(selectedAssignment.closeDate)}
+                                                    </Typography>
+                                                </Box>
+                                                <Box>
+                                                    <Typography variant="caption" sx={{ 
+                                                        color: '#92400e',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: 1,
+                                                        fontWeight: 600
+                                                    }}>
+                                                        Creado el
+                                                    </Typography>
+                                                    <Typography variant="body1" sx={{ 
+                                                        fontWeight: 500,
+                                                        color: '#78350f'
+                                                    }}>
+                                                        {formatDateWithTime(selectedAssignment.createdAt)}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                        </Paper>
+                                    </Grid>
+
+                                    {/* Tarjeta de Archivos (si existen) */}
+                                    {selectedAssignment.attachments && selectedAssignment.attachments.length > 0 && (
+                                        <Grid item xs={12}>
+                                            <Paper elevation={0} sx={{ 
+                                                p: 3,
+                                                borderRadius: 3,
+                                                background: 'linear-gradient(145deg, #f0fdf4 0%, #dcfce7 100%)',
+                                                border: '1px solid #86efac'
+                                            }}>
+                                                <Typography variant="h6" sx={{ 
+                                                    mb: 2, 
+                                                    color: '#059669',
+                                                    fontWeight: 600,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 1
+                                                }}>
+                                                    📎 Archivos Adjuntos
+                                                </Typography>
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                                    {selectedAssignment.attachments.map((file, index) => (
                                                         <Chip
+                                                            key={index}
                                                             icon={<FileDownload />}
                                                             label={file.fileName}
-                                                            onClick={() => window.open(`http://localhost:3001/${file.fileUrl}`, '_blank')}
+                                                            onClick={() => {
+                                                                const downloadUrl = `/api/files/download?url=${encodeURIComponent(file.fileUrl)}&fileName=${encodeURIComponent(file.fileName)}&mimeType=${encodeURIComponent(file.mimeType || 'application/octet-stream')}`;
+                                                                window.open(downloadUrl, '_blank');
+                                                            }}
                                                             sx={{ 
-                                                                mr: 1, 
-                                                                mb: 1,
+                                                                backgroundColor: 'white',
+                                                                border: '1px solid #86efac',
+                                                                color: '#059669',
                                                                 cursor: 'pointer',
                                                                 '&:hover': {
-                                                                    background: theme.palette.primary.light,
-                                                                    color: 'white'
-                                                                }
+                                                                    backgroundColor: '#059669',
+                                                                    color: 'white',
+                                                                    transform: 'translateY(-2px)',
+                                                                    boxShadow: '0 4px 12px rgba(5, 150, 105, 0.3)'
+                                                                },
+                                                                transition: 'all 0.2s ease'
                                                             }}
-                                                            variant="outlined"
                                                         />
-                                                    </Grid>
-                                                ))}
-                                            </Grid>
-                                        </Box>
-                                    </Grid>
-                                )}
-                            </Grid>
+                                                    ))}
+                                                </Box>
+                                            </Paper>
+                                        </Grid>
+                                    )}
+                                </Grid>
+                            </Box>
                         </DialogContent>
-                        <DialogActions sx={{ 
-                            p: 2,
-                            borderTop: `1px solid ${theme.palette.divider}`
+
+                        {/* Footer minimalista */}
+                        <Box sx={{ 
+                            p: 3, 
+                            borderTop: '1px solid',
+                            borderColor: 'grey.100',
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            background: '#fafbfc'
                         }}>
-                            {selectedAssignment.status === 'pending' && (
-                                <Button
-                                    color="success"
-                                    variant="contained"
-                                    startIcon={<Done />}
-                                    onClick={() => handleCompleteAssignment(selectedAssignment._id)}
-                                    disabled={actionLoading}
-                                    sx={{ mr: 1 }}
-                                >
-                                    {actionLoading ? 'Completando...' : 'Marcar como Completado'}
-                                </Button>
-                            )}
                             <Button 
                                 onClick={() => setShowDetailDialog(false)}
-                                variant="outlined"
+                                variant="contained"
+                                sx={{
+                                    borderRadius: 2,
+                                    px: 4,
+                                    py: 1,
+                                    fontWeight: 600,
+                                    textTransform: 'none',
+                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                    '&:hover': {
+                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                                        transform: 'translateY(-1px)'
+                                    },
+                                    transition: 'all 0.2s ease'
+                                }}
                             >
                                 Cerrar
                             </Button>
-                        </DialogActions>
+                        </Box>
                     </>
                 )}
             </Dialog>
@@ -1044,251 +1360,330 @@ const AdminAssignments = ({ open, onClose }) => {
                 teachers={teachers}
             />
 
-            {/* Diálogo para gestionar estados de docentes */}
-            <Dialog
-                open={showTeacherStatusDialog}
-                onClose={() => setShowTeacherStatusDialog(false)}
-                maxWidth="md"
-                fullWidth
-                TransitionComponent={Slide}
-                transitionDuration={300}
+{/* Diálogo para gestionar estados de docentes */}
+<Dialog
+  open={showTeacherStatusDialog}
+  onClose={() => setShowTeacherStatusDialog(false)}
+  maxWidth="md"
+  fullWidth
+  TransitionComponent={Slide}
+  transitionDuration={300}
+>
+  {/* CABECERA */}
+  <DialogTitle
+    sx={{
+      backgroundColor: "primary.main",
+      color: "primary.contrastText",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      px: 3,
+      py: 2,
+    }}
+  >
+    <Box display="flex" alignItems="center" gap={1}>
+      <PlaylistAddCheck />
+      <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+        Gestionar Estados de Docentes
+      </Typography>
+    </Box>
+    <IconButton
+      onClick={() => setShowTeacherStatusDialog(false)}
+      sx={{ color: "primary.contrastText" }}
+    >
+      <Close />
+    </IconButton>
+  </DialogTitle>
+
+  {/* CONTENIDO */}
+  <DialogContent sx={{ p: 3 }}>
+    {selectedAssignment && (
+      <>
+        {/* INFO DE LA ASIGNACIÓN (título y descripción explícitos) */}
+        <Paper
+          elevation={0}
+          sx={{
+            p: 2,
+            mb: 3,
+            borderRadius: 2,
+            bgcolor: "background.default",
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+            📝 <strong>Título:</strong> {selectedAssignment.title}
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ whiteSpace: "pre-line" }}
+          >
+            <strong>Descripción:</strong>{" "}
+            {selectedAssignment.description || "Sin descripción disponible."}
+          </Typography>
+        </Paper>
+
+        {/* SUBTÍTULO */}
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Estados de Entrega por Docente
+        </Typography>
+
+        {assignmentTeachers.length === 0 ? (
+          <Typography variant="body1" color="text.secondary">
+            {actionLoading
+              ? "Cargando docentes..."
+              : "No hay docentes asignados a esta actividad."}
+          </Typography>
+        ) : (
+          <>
+            {/* SELECCIÓN GRUPAL */}
+            <Paper
+              elevation={0}
+              sx={{
+                mb: 3,
+                p: 2,
+                borderRadius: 2,
+                bgcolor: "background.default",
+                border: "1px solid",
+                borderColor: "divider",
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                flexWrap: "wrap",
+              }}
             >
-                <DialogTitle sx={{ 
-                    backgroundColor: 'primary.main', 
-                    color: 'primary.contrastText',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                }}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                        <PlaylistAddCheck />
-                        <Typography variant="h6">
-                            Gestionar Estados de Docentes
-                        </Typography>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={
+                      assignmentTeachers.length > 0 &&
+                      assignmentTeachers
+                        .filter((t) => t.visible !== false)
+                        .every((t) => t.selected)
+                    }
+                    indeterminate={
+                      assignmentTeachers
+                        .filter((t) => t.visible !== false)
+                        .some((t) => t.selected) &&
+                      !assignmentTeachers
+                        .filter((t) => t.visible !== false)
+                        .every((t) => t.selected)
+                    }
+                    onChange={(e) => {
+                      const checked = e.target.checked
+                      setAssignmentTeachers((prev) =>
+                        prev.map((t) =>
+                          t.visible === false ? t : { ...t, selected: checked }
+                        )
+                      )
+                    }}
+                  />
+                }
+                label={`Seleccionar todos los docentes (${assignmentTeachers.filter(
+                  (t) => t.selected
+                ).length}/${assignmentTeachers.filter(
+                  (t) => t.visible !== false
+                ).length} seleccionados)`}
+              />
+
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <InputLabel>Estado grupal</InputLabel>
+                <Select
+                  label="Estado grupal"
+                  value={groupStatus || ""}
+                  onChange={(e) => setGroupStatus(e.target.value)}
+                >
+                  <MenuItem value="completed">Entregado</MenuItem>
+                  <MenuItem value="completed-late">
+                    Entregado con Retraso
+                  </MenuItem>
+                  <MenuItem value="not-delivered">No Entregado</MenuItem>
+                  <MenuItem value="pending">Pendiente</MenuItem>
+                </Select>
+              </FormControl>
+
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleConfirmTeacherStates}
+              >
+                Confirmar
+              </Button>
+              <Button
+                variant="text"
+                color="inherit"
+                onClick={() => {
+                  setGroupStatus("")
+                  setAssignmentTeachers((prev) =>
+                    prev.map((t) => ({ ...t, selected: false }))
+                  )
+                }}
+              >
+                Limpiar
+              </Button>
+            </Paper>
+
+            {/* LISTA DE DOCENTES */}
+            <Grid container spacing={2}>
+              {assignmentTeachers.map((teacher, index) => (
+                <Grid item xs={12} key={index}>
+                  <Paper
+                    elevation={1}
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      transition: "0.2s",
+                      "&:hover": {
+                        bgcolor: "action.hover",
+                      },
+                    }}
+                  >
+                    <Box
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
+                      {/* INFO DOCENTE */}
+                      <Box display="flex" alignItems="center" gap={2}>
+                        <Checkbox
+                          checked={!!teacher.selected}
+                          onChange={(e) => {
+                            const checked = e.target.checked
+                            setAssignmentTeachers((prev) =>
+                              prev.map((t, i) =>
+                                i === index ? { ...t, selected: checked } : t
+                              )
+                            )
+                          }}
+                          sx={{ mr: 1 }}
+                        />
+                        <AssignmentInd color="primary" />
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight="bold">
+                            {teacher.nombre} {teacher.apellidoPaterno}{" "}
+                            {teacher.apellidoMaterno || ""}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {teacher.email}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      {/* SELECTOR DE ESTADO */}
+                      <Box display="flex" alignItems="center" gap={2}>
+                        <FormControl size="small" sx={{ minWidth: 200 }}>
+                          <InputLabel>Seleccionar Estado</InputLabel>
+                          <Select
+                            value={teacher.status || "pending"}
+                            label="Seleccionar Estado"
+                            onChange={(e) =>
+                              setAssignmentTeachers((prev) =>
+                                prev.map((t, i) =>
+                                  i === index
+                                    ? { ...t, status: e.target.value }
+                                    : t
+                                )
+                              )
+                            }
+                            disabled={actionLoading}
+                          >
+                            <MenuItem value="completed">
+                              <Chip
+                                size="small"
+                                label="Entregado"
+                                sx={{
+                                  backgroundColor: "#4caf50",
+                                  color: "white",
+                                  minWidth: 100,
+                                }}
+                              />
+                            </MenuItem>
+                            <MenuItem value="completed-late">
+                              <Chip
+                                size="small"
+                                label="Entregado con Retraso"
+                                sx={{
+                                  backgroundColor: "#ff9800",
+                                  color: "white",
+                                  minWidth: 100,
+                                }}
+                              />
+                            </MenuItem>
+                            <MenuItem value="not-delivered">
+                              <Chip
+                                size="small"
+                                label="No Entregado"
+                                sx={{
+                                  backgroundColor: "#f44336",
+                                  color: "white",
+                                  minWidth: 100,
+                                }}
+                              />
+                            </MenuItem>
+                            <MenuItem value="pending">
+                              <Chip
+                                size="small"
+                                label="Pendiente"
+                                sx={{
+                                  backgroundColor: "#795548",
+                                  color: "white",
+                                  minWidth: 100,
+                                }}
+                              />
+                            </MenuItem>
+                          </Select>
+                        </FormControl>
+
+                        {/* ESTADO ACTUAL */}
+                        <Chip
+                          size="small"
+                          label={
+                            teacher.status === "completed"
+                              ? "Entregado"
+                              : teacher.status === "completed-late"
+                              ? "Entregado con Retraso"
+                              : teacher.status === "not-delivered"
+                              ? "No Entregado"
+                              : "Pendiente"
+                          }
+                          sx={{
+                            backgroundColor:
+                              teacher.status === "completed"
+                                ? "#4caf50"
+                                : teacher.status === "completed-late"
+                                ? "#ff9800"
+                                : teacher.status === "not-delivered"
+                                ? "#f44336"
+                                : "#795548",
+                            color: "white",
+                          }}
+                        />
+                      </Box>
                     </Box>
-                    <IconButton 
-                        onClick={() => setShowTeacherStatusDialog(false)}
-                        sx={{ color: 'primary.contrastText' }}
-                    >
-                        <Close />
-                    </IconButton>
-                </DialogTitle>
-                
-                <DialogContent sx={{ p: 3 }}>
-                    {selectedAssignment && (
-                        <>
-                            <Typography variant="h6" gutterBottom>
-                                {selectedAssignment.title}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary" gutterBottom>
-                                {selectedAssignment.description}
-                            </Typography>
-                            
-                            <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-                                Estados de Entrega por Docente
-                            </Typography>
-                            
-                            {assignmentTeachers.length === 0 ? (
-                                <Typography variant="body1" color="text.secondary">
-                                    {actionLoading ? 'Cargando docentes...' : 'No hay docentes asignados a esta actividad.'}
-                                </Typography>
-                            ) : (
-                                <>
-                                    {/* Selección grupal */}
-                                    <Box sx={{ mb: 2, p: 2, borderRadius: 2, bgcolor: 'background.default', border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                                        <FormControlLabel
-                                            control={
-                                                <Checkbox
-                                                    checked={assignmentTeachers.length > 0 && assignmentTeachers.filter(t => t.visible !== false).every(t => t.selected)}
-                                                    indeterminate={assignmentTeachers.filter(t => t.visible !== false).some(t => t.selected) && !assignmentTeachers.filter(t => t.visible !== false).every(t => t.selected)}
-                                                    onChange={e => {
-                                                        const checked = e.target.checked;
-                                                        setAssignmentTeachers(prev => prev.map(t => t.visible === false ? t : { ...t, selected: checked }));
-                                                    }}
-                                                />
-                                            }
-                                                label={`Seleccionar todos los docentes (${assignmentTeachers.filter(t => t.selected).length}/${assignmentTeachers.filter(t => t.visible !== false).length} seleccionados)`}
-                                        />
-                                        <FormControl size="small" sx={{ minWidth: 200 }}>
-                                            <InputLabel>Estado grupal</InputLabel>
-                                            <Select
-                                                label="Estado grupal"
-                                                value={groupStatus || ''}
-                                                onChange={e => setGroupStatus(e.target.value)}
-                                                    
-                                            >
-                                                <MenuItem value="completed">Entregado</MenuItem>
-                                                <MenuItem value="completed-late">Entregado con Retraso</MenuItem>
-                                                <MenuItem value="not-delivered">No Entregado</MenuItem>
-                                                <MenuItem value="pending">Pendiente</MenuItem>
-                                            </Select>
-                                        </FormControl>
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                                onClick={handleConfirmTeacherStates}
-                                        >
-                                            Confirmar cambio de estado
-                                        </Button>
-                                            <Button
-                                                variant="text"
-                                                color="inherit"
-                                                onClick={() => {
-                                                    setGroupStatus('');
-                                                    setAssignmentTeachers(prev => prev.map(t => ({ ...t, selected: false })));
-                                                }}
-                                            >
-                                                Limpiar selección
-                                            </Button>
-                                    </Box>
-    // ...existing code...
-                                    <Grid container spacing={2}>
-                                        {assignmentTeachers.map((teacher, index) => (
-                                            <Grid item xs={12} key={index}>
-                                                <Paper 
-                                                    elevation={2} 
-                                                    sx={{ 
-                                                        p: 2, 
-                                                        borderRadius: 2,
-                                                        border: '1px solid',
-                                                        borderColor: 'divider'
-                                                    }}
-                                                >
-                                                    <Box display="flex" justifyContent="space-between" alignItems="center">
-                                                        <Box display="flex" alignItems="center" gap={2}>
-                                                            <Checkbox
-                                                                checked={!!teacher.selected}
-                                                                onChange={e => {
-                                                                    const checked = e.target.checked;
-                                                                    setAssignmentTeachers(prev => prev.map((t, i) => i === index ? { ...t, selected: checked } : t));
-                                                                }}
-                                                                sx={{ mr: 1 }}
-                                                            />
-                                                            <AssignmentInd color="primary" />
-                                                            <Box>
-                                                                <Typography variant="subtitle1" fontWeight="bold">
-                                                                    {teacher.nombre} {teacher.apellidoPaterno} {teacher.apellidoMaterno || ''}
-                                                                </Typography>
-                                                                <Typography variant="body2" color="text.secondary">
-                                                                    {teacher.email}
-                                                                </Typography>
-                                                            </Box>
-                                                        </Box>
-                                                        <Box display="flex" alignItems="center" gap={2}>
-                                                            <FormControl size="small" sx={{ minWidth: 200 }}>
-                                                                <InputLabel>Seleccionar Estado</InputLabel>
-                                                                <Select
-                                                                    value={teacher.status || 'pending'}
-                                                                    label="Seleccionar Estado"
-                                                                    onChange={e => setAssignmentTeachers(prev => prev.map((t, i) => i === index ? { ...t, status: e.target.value } : t))}
-                                                                    disabled={actionLoading}
-                                                                >
-                                                                    <MenuItem value="completed">
-                                                                        <Box display="flex" alignItems="center" gap={1}>
-                                                                            <Chip 
-                                                                                size="small" 
-                                                                                label="Entregado" 
-                                                                                sx={{ 
-                                                                                    backgroundColor: '#4caf50', 
-                                                                                    color: 'white',
-                                                                                    minWidth: 80
-                                                                                }} 
-                                                                            />
-                                                                        </Box>
-                                                                    </MenuItem>
-                                                                    <MenuItem value="completed-late">
-                                                                        <Box display="flex" alignItems="center" gap={1}>
-                                                                            <Chip 
-                                                                                size="small" 
-                                                                                label="Entregado con Retraso" 
-                                                                                sx={{ 
-                                                                                    backgroundColor: '#ff9800', 
-                                                                                    color: 'white',
-                                                                                    minWidth: 80
-                                                                                }} 
-                                                                            />
-                                                                        </Box>
-                                                                    </MenuItem>
-                                                                    <MenuItem value="not-delivered">
-                                                                        <Box display="flex" alignItems="center" gap={1}>
-                                                                            <Chip 
-                                                                                size="small" 
-                                                                                label="No Entregado" 
-                                                                                sx={{ 
-                                                                                    backgroundColor: '#f44336', 
-                                                                                    color: 'white',
-                                                                                    minWidth: 80
-                                                                                }} 
-                                                                            />
-                                                                        </Box>
-                                                                    </MenuItem>
-                                                                    <MenuItem value="pending">
-                                                                        <Box display="flex" alignItems="center" gap={1}>
-                                                                            <Chip 
-                                                                                size="small" 
-                                                                                label="Pendiente" 
-                                                                                sx={{ 
-                                                                                    backgroundColor: '#795548', 
-                                                                                    color: 'white',
-                                                                                    minWidth: 80
-                                                                                }} 
-                                                                            />
-                                                                        </Box>
-                                                                    </MenuItem>
-                                                                </Select>
-                                                            </FormControl>
-                                                            {/* Mostrar estado actual */}
-                                                            <Box>
-                                                                {teacher.status === 'completed' && (
-                                                                    <Chip 
-                                                                        size="small" 
-                                                                        label="Entregado" 
-                                                                        sx={{ backgroundColor: '#4caf50', color: 'white' }} 
-                                                                    />
-                                                                )}
-                                                                {teacher.status === 'completed-late' && (
-                                                                    <Chip 
-                                                                        size="small" 
-                                                                        label="Entregado con Retraso" 
-                                                                        sx={{ backgroundColor: '#ff9800', color: 'white' }} 
-                                                                    />
-                                                                )}
-                                                                {teacher.status === 'not-delivered' && (
-                                                                    <Chip 
-                                                                        size="small" 
-                                                                        label="No Entregado" 
-                                                                        sx={{ backgroundColor: '#f44336', color: 'white' }} 
-                                                                    />
-                                                                )}
-                                                                {(!teacher.status || teacher.status === 'pending') && (
-                                                                    <Chip 
-                                                                        size="small" 
-                                                                        label="Pendiente" 
-                                                                        sx={{ backgroundColor: '#795548', color: 'white' }} 
-                                                                    />
-                                                                )}
-                                                            </Box>
-                                                        </Box>
-                                                    </Box>
-                                                </Paper>
-                                            </Grid>
-                                        ))}
-                                    </Grid>
-                                </>
-                            )}
-                        </>
-                    )}
-                </DialogContent>
-                
-                <DialogActions sx={{ p: 2 }}>
-                    <Button 
-                        onClick={() => setShowTeacherStatusDialog(false)}
-                        variant="outlined"
-                    >
-                        Cerrar
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          </>
+        )}
+      </>
+    )}
+  </DialogContent>
+
+  {/* ACCIONES */}
+  <DialogActions sx={{ p: 2 }}>
+    <Button
+      onClick={() => setShowTeacherStatusDialog(false)}
+      variant="outlined"
+    >
+      Cerrar
+    </Button>
+  </DialogActions>
+</Dialog>
+
         </Dialog>
     );
 };

@@ -1,5 +1,5 @@
 // Componente para renderizar la fila de cada docente con los stats correctos
-function TeacherRow({ user }) {
+function TeacherRow({ user, onStatClick }) {
     const [stats, setStats] = React.useState({
         total: 0,
         entregadas: 0,
@@ -62,14 +62,14 @@ function TeacherRow({ user }) {
                 <TableCell>
                     <StyledAvatar
                         src={user.fotoPerfil 
-                            ? `http://localhost:3001/uploads/perfiles/${user.fotoPerfil}?t=${Date.now()}`
-                            : 'http://localhost:3001/uploads/perfiles/2138822222222_1749571359362.png'
+                            ? user.fotoPerfil
+                            : 'https://res.cloudinary.com/dzrstenqb/image/upload/v1/perfiles/default_profile'
                         }
                         alt={`Foto de perfil de ${user.nombreCompleto}`}
                         onError={(e) => {
-                            if (!e.target.src.includes('2138822222222_1749571359362.png')) {
+                            if (!e.target.src.includes('default_profile')) {
                                 e.target.onerror = null;
-                                e.target.src = `http://localhost:3001/uploads/perfiles/2138822222222_1749571359362.png?t=${Date.now()}`;
+                                e.target.src = 'https://res.cloudinary.com/dzrstenqb/image/upload/v1/perfiles/default_profile';
                             }
                         }}
                     />
@@ -85,14 +85,6 @@ function TeacherRow({ user }) {
                     </Typography>
                 </TableCell>
                 <TableCell>
-                    <Chip 
-                        label={typeof user.carrera === 'object' ? user.carrera.nombre : user.carrera} 
-                        size="small" 
-                        color="secondary"
-                        sx={{ fontWeight: 'bold' }}
-                    />
-                </TableCell>
-                <TableCell>
                     <Typography variant="body2" color="text.secondary">
                         {user.email}
                     </Typography>
@@ -103,6 +95,16 @@ function TeacherRow({ user }) {
                         color="primary" 
                         variant="outlined"
                         size="small"
+                        onClick={() => onStatClick(user, 'total')}
+                        sx={{ 
+                            cursor: 'pointer',
+                            '&:hover': {
+                                backgroundColor: 'primary.light',
+                                color: 'white',
+                                transform: 'scale(1.1)',
+                            },
+                            transition: 'all 0.2s ease'
+                        }}
                     />
                 </TableCell>
                 <TableCell align="center">
@@ -111,6 +113,16 @@ function TeacherRow({ user }) {
                         color="info" 
                         variant="outlined"
                         size="small"
+                        onClick={() => onStatClick(user, 'pending')}
+                        sx={{ 
+                            cursor: 'pointer',
+                            '&:hover': {
+                                backgroundColor: 'info.light',
+                                color: 'white',
+                                transform: 'scale(1.1)',
+                            },
+                            transition: 'all 0.2s ease'
+                        }}
                     />
                 </TableCell>
                 <TableCell align="center">
@@ -119,6 +131,16 @@ function TeacherRow({ user }) {
                         color="success" 
                         variant="outlined"
                         size="small"
+                        onClick={() => onStatClick(user, 'completed')}
+                        sx={{ 
+                            cursor: 'pointer',
+                            '&:hover': {
+                                backgroundColor: 'success.light',
+                                color: 'white',
+                                transform: 'scale(1.1)',
+                            },
+                            transition: 'all 0.2s ease'
+                        }}
                     />
                 </TableCell>
                 <TableCell align="center">
@@ -127,6 +149,16 @@ function TeacherRow({ user }) {
                         color="warning" 
                         variant="outlined"
                         size="small"
+                        onClick={() => onStatClick(user, 'completed-late')}
+                        sx={{ 
+                            cursor: 'pointer',
+                            '&:hover': {
+                                backgroundColor: 'warning.light',
+                                color: 'white',
+                                transform: 'scale(1.1)',
+                            },
+                            transition: 'all 0.2s ease'
+                        }}
                     />
                 </TableCell>
                 <TableCell align="center">
@@ -135,6 +167,16 @@ function TeacherRow({ user }) {
                         color="error" 
                         variant="outlined"
                         size="small"
+                        onClick={() => onStatClick(user, 'not-delivered')}
+                        sx={{ 
+                            cursor: 'pointer',
+                            '&:hover': {
+                                backgroundColor: 'error.light',
+                                color: 'white',
+                                transform: 'scale(1.1)',
+                            },
+                            transition: 'all 0.2s ease'
+                        }}
                     />
                 </TableCell>
                 <TableCell align="center">
@@ -149,11 +191,6 @@ function TeacherRow({ user }) {
             </AnimatedTableRow>
         </Fade>
     );
-}
-// Custom hook para obtener stats de asignaciones por docente
-function useTeacherAssignmentStats(teacherId) {
-    // Eliminado: ahora la lógica está en TeacherRow usando el endpoint correcto
-    return null;
 }
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, CircularProgress, Avatar, Chip, Card, CardContent, Grid, Fade, Slide, Zoom } from '@mui/material';
@@ -184,7 +221,7 @@ const slideIn = keyframes`
 `;
 
 // Componentes estilizados
-const StyledCard = styled(Card)(({ theme }) => ({
+const StyledCard = styled(Card)(() => ({
   background: 'linear-gradient(145deg, #ffffff 0%, #f5f7fa 100%)',
   borderRadius: '16px',
   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
@@ -196,7 +233,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
   },
 }));
 
-const GlowButton = styled(Button)(({ theme }) => ({
+const GlowButton = styled(Button)(() => ({
   borderRadius: '12px',
   padding: '12px 24px',
   background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
@@ -207,7 +244,7 @@ const GlowButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-const AnimatedTableRow = styled(TableRow)(({ theme }) => ({
+const AnimatedTableRow = styled(TableRow)(() => ({
   transition: 'all 0.3s ease',
   '&:hover': {
     backgroundColor: 'rgba(25, 118, 210, 0.04)',
@@ -215,7 +252,7 @@ const AnimatedTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-const HeaderBox = styled(Box)(({ theme }) => ({
+const HeaderBox = styled(Box)(() => ({
   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   borderRadius: '20px',
   padding: '20px',
@@ -235,7 +272,7 @@ const HeaderBox = styled(Box)(({ theme }) => ({
   },
 }));
 
-const StyledAvatar = styled(Avatar)(({ theme }) => ({
+const StyledAvatar = styled(Avatar)(() => ({
   width: 56,
   height: 56,
   border: '3px solid #fff',
@@ -246,9 +283,154 @@ const StyledAvatar = styled(Avatar)(({ theme }) => ({
   },
 }));
 
+// Chip de filtro mejorado con estilos sólidos
+const FilterChip = styled(Chip)(({ theme, selected, chipcolor }) => ({
+  fontWeight: 'bold',
+  px: 2,
+  height: 40,
+  fontSize: '0.9rem',
+  borderRadius: '20px',
+  border: '2px solid transparent',
+  cursor: 'pointer',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  
+  // Estados por defecto (no seleccionado)
+  ...(chipcolor === 'primary' && !selected && {
+    backgroundColor: 'rgba(25, 118, 210, 0.08)',
+    color: theme.palette.primary.main,
+    borderColor: 'rgba(25, 118, 210, 0.3)',
+    '&:hover': {
+      backgroundColor: theme.palette.primary.main,
+      color: 'white',
+      borderColor: theme.palette.primary.main,
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 12px rgba(25, 118, 210, 0.4)',
+    }
+  }),
+  
+  ...(chipcolor === 'info' && !selected && {
+    backgroundColor: 'rgba(2, 136, 209, 0.08)',
+    color: theme.palette.info.main,
+    borderColor: 'rgba(2, 136, 209, 0.3)',
+    '&:hover': {
+      backgroundColor: theme.palette.info.main,
+      color: 'white',
+      borderColor: theme.palette.info.main,
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 12px rgba(2, 136, 209, 0.4)',
+    }
+  }),
+  
+  ...(chipcolor === 'success' && !selected && {
+    backgroundColor: 'rgba(46, 125, 50, 0.08)',
+    color: theme.palette.success.main,
+    borderColor: 'rgba(46, 125, 50, 0.3)',
+    '&:hover': {
+      backgroundColor: theme.palette.success.main,
+      color: 'white',
+      borderColor: theme.palette.success.main,
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 12px rgba(46, 125, 50, 0.4)',
+    }
+  }),
+  
+  ...(chipcolor === 'warning' && !selected && {
+    backgroundColor: 'rgba(237, 108, 2, 0.08)',
+    color: theme.palette.warning.main,
+    borderColor: 'rgba(237, 108, 2, 0.3)',
+    '&:hover': {
+      backgroundColor: theme.palette.warning.main,
+      color: 'white',
+      borderColor: theme.palette.warning.main,
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 12px rgba(237, 108, 2, 0.4)',
+    }
+  }),
+  
+  ...(chipcolor === 'error' && !selected && {
+    backgroundColor: 'rgba(211, 47, 47, 0.08)',
+    color: theme.palette.error.main,
+    borderColor: 'rgba(211, 47, 47, 0.3)',
+    '&:hover': {
+      backgroundColor: theme.palette.error.main,
+      color: 'white',
+      borderColor: theme.palette.error.main,
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 12px rgba(211, 47, 47, 0.4)',
+    }
+  }),
+  
+  // Estados seleccionados
+  ...(chipcolor === 'primary' && selected && {
+    backgroundColor: theme.palette.primary.main,
+    color: 'white',
+    borderColor: theme.palette.primary.main,
+    boxShadow: '0 4px 12px rgba(25, 118, 210, 0.4)',
+    '&:hover': {
+      backgroundColor: theme.palette.primary.dark,
+      borderColor: theme.palette.primary.dark,
+      transform: 'translateY(-2px)',
+      boxShadow: '0 6px 16px rgba(25, 118, 210, 0.5)',
+    }
+  }),
+  
+  ...(chipcolor === 'info' && selected && {
+    backgroundColor: theme.palette.info.main,
+    color: 'white',
+    borderColor: theme.palette.info.main,
+    boxShadow: '0 4px 12px rgba(2, 136, 209, 0.4)',
+    '&:hover': {
+      backgroundColor: theme.palette.info.dark,
+      borderColor: theme.palette.info.dark,
+      transform: 'translateY(-2px)',
+      boxShadow: '0 6px 16px rgba(2, 136, 209, 0.5)',
+    }
+  }),
+  
+  ...(chipcolor === 'success' && selected && {
+    backgroundColor: theme.palette.success.main,
+    color: 'white',
+    borderColor: theme.palette.success.main,
+    boxShadow: '0 4px 12px rgba(46, 125, 50, 0.4)',
+    '&:hover': {
+      backgroundColor: theme.palette.success.dark,
+      borderColor: theme.palette.success.dark,
+      transform: 'translateY(-2px)',
+      boxShadow: '0 6px 16px rgba(46, 125, 50, 0.5)',
+    }
+  }),
+  
+  ...(chipcolor === 'warning' && selected && {
+    backgroundColor: theme.palette.warning.main,
+    color: 'white',
+    borderColor: theme.palette.warning.main,
+    boxShadow: '0 4px 12px rgba(237, 108, 2, 0.4)',
+    '&:hover': {
+      backgroundColor: theme.palette.warning.dark,
+      borderColor: theme.palette.warning.dark,
+      transform: 'translateY(-2px)',
+      boxShadow: '0 6px 16px rgba(237, 108, 2, 0.5)',
+    }
+  }),
+  
+  ...(chipcolor === 'error' && selected && {
+    backgroundColor: theme.palette.error.main,
+    color: 'white',
+    borderColor: theme.palette.error.main,
+    boxShadow: '0 4px 12px rgba(211, 47, 47, 0.4)',
+    '&:hover': {
+      backgroundColor: theme.palette.error.dark,
+      borderColor: theme.palette.error.dark,
+      transform: 'translateY(-2px)',
+      boxShadow: '0 6px 16px rgba(211, 47, 47, 0.5)',
+    }
+  }),
+}));
+
 export default function Structure() {
     // Filtro de estado de asignaciones
     const [statusFilter, setStatusFilter] = useState('total');
+    const [teacherStatsByUser, setTeacherStatsByUser] = useState({});
 
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -265,6 +447,68 @@ export default function Structure() {
     const [asignationOpen, setAsignationOpen] = useState(false);
     const [adminAssignmentsOpen, setAdminAssignmentsOpen] = useState(false);
     const [teacherStats, setTeacherStats] = useState({});
+    const [selectedTeacherFilter, setSelectedTeacherFilter] = useState(null);
+
+    // Función para obtener estadísticas de cada usuario individualmente
+    const fetchUserStats = useCallback(async (userId) => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token || !userId) return null;
+
+            // 1. Obtener todas las asignaciones
+            const resAll = await fetch('http://localhost:3001/api/assignments/admin/all', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (!resAll.ok) return null;
+            
+            const dataAll = await resAll.json();
+            const assignments = Array.isArray(dataAll.data?.assignments) ? dataAll.data.assignments : [];
+            
+            let entregadas = 0, retraso = 0, pendientes = 0, noEntregadas = 0, total = 0;
+            
+            // 2. Para cada asignación, obtener el estado del docente específico
+            await Promise.all(assignments.map(async (assignment) => {
+                try {
+                    const resStatus = await fetch(`http://localhost:3001/api/assignments/${assignment._id}/teachers-status`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    if (!resStatus.ok) return;
+                    
+                    const dataStatus = await resStatus.json();
+                    const teacherStatusArr = Array.isArray(dataStatus.teachersStatus) ? dataStatus.teachersStatus : [];
+                    const teacherStatus = teacherStatusArr.find(ts => ts.teacherId === userId);
+                    
+                    if (teacherStatus) {
+                        total++;
+                        if (teacherStatus.status === 'completed') entregadas++;
+                        else if (teacherStatus.status === 'completed-late') retraso++;
+                        else if (teacherStatus.status === 'pending') pendientes++;
+                        else if (teacherStatus.status === 'not-delivered') noEntregadas++;
+                    }
+                } catch (error) {
+                    console.error('Error fetching assignment status:', error);
+                }
+            }));
+
+            return {
+                total,
+                entregadas,
+                retraso,
+                pendientes,
+                noEntregadas,
+                scorePercent: total > 0 ? Math.round(((entregadas + (retraso * 0.5)) / total) * 100) : 0
+            };
+        } catch (error) {
+            console.error('Error fetching user stats:', error);
+            return null;
+        }
+    }, []);
 
     // Función optimizada para obtener usuarios con cache
     const fetchUsers = useCallback(async (force = false) => {
@@ -297,12 +541,28 @@ export default function Structure() {
                         const registrosData = await res.json();
                         return { ...user, registros: Array.isArray(registrosData) ? registrosData : [] };
                     }
-                } catch (e) {
+                } catch {
                     // Si falla, dejar registros vacío
                 }
                 return { ...user, registros: [] };
             }));
             setUsers(usersWithRegistros);
+            
+            // Obtener estadísticas para cada usuario
+            const statsPromises = usersWithRegistros.map(async (user) => {
+                const stats = await fetchUserStats(user._id);
+                return { userId: user._id, stats };
+            });
+            
+            const allStats = await Promise.all(statsPromises);
+            const statsMap = {};
+            allStats.forEach(({ userId, stats }) => {
+                if (stats) {
+                    statsMap[userId] = stats;
+                }
+            });
+            
+            setTeacherStatsByUser(statsMap);
             setError(null);
         } catch (err) {
             console.error('Error detallado:', err);
@@ -311,7 +571,7 @@ export default function Structure() {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [users.length]);
+    }, [users.length, fetchUserStats]);
 
     // Función para obtener estadísticas
     const fetchTeacherStats = useCallback(async () => {
@@ -367,27 +627,6 @@ export default function Structure() {
         }
     }, []);
 
-    // Función para actualizar estadísticas de un profesor específico
-    const updateTeacherStats = useCallback(async (teacherId) => {
-        try {
-            const response = await fetch(`http://localhost:3001/api/stats/teachers/${teacherId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            if (!response.ok) {
-                throw new Error('Error al actualizar estadísticas');
-            }
-            // Refrescar estadísticas y usuarios para reflejar cambios en la tabla
-            await fetchTeacherStats();
-            await fetchUsers(true);
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }, [fetchTeacherStats, fetchUsers]);
-
     // Cargar usuarios y estadísticas junto con los usuarios
     useEffect(() => {
         const loadData = async () => {
@@ -402,34 +641,29 @@ export default function Structure() {
     }, [fetchUsers, fetchTeacherStats]);
 
     // Función de búsqueda mejorada
-    // Filtrar usuarios según el filtro de estado seleccionado
+    // Filtrar usuarios según el filtro de estado seleccionado - CORREGIDO
     const filteredUsers = useMemo(() => {
         if (statusFilter === 'total') return users;
+        
         return users.filter(user => {
-            const stats = teacherStats[user.numeroControl] || {};
-            if (statusFilter === 'pendientes') return stats.pending > 0;
-            if (statusFilter === 'entregadas') return stats.completed > 0;
-            if (statusFilter === 'retraso') return stats.late > 0;
-            if (statusFilter === 'noentregadas') return stats.notDelivered > 0;
-            return true;
+            const stats = teacherStatsByUser[user._id];
+            if (!stats) return false;
+            
+            switch (statusFilter) {
+                case 'pendientes':
+                    return stats.pendientes > 0;
+                case 'entregadas':
+                    return stats.entregadas > 0;
+                case 'retraso':
+                    return stats.retraso > 0;
+                case 'noentregadas':
+                    return stats.noEntregadas > 0;
+                default:
+                    return true;
+            }
         });
-    }, [users, teacherStats, statusFilter]);
+    }, [users, teacherStatsByUser, statusFilter]);
 
-    // Memoizar los detalles del estudiante
-    const getStudentDetails = useMemo(() => (session) => ({
-        ...session,
-        correo: session.nombre?.toLowerCase().replace(/ /g, '.') + '@tesjo.edu.mx',
-        carrera: session.carrera || 'No especificada',
-        registros: session.registros || []
-    }), []);
-
-    const handleOpenDialog = useCallback((session = null) => {
-        setEditSession(session);
-        setForm(session || { nombre: '', encargado: '', inicioServicio: '', finServicio: '', horasAcumuladas: '' });
-        setDialogOpen(true);
-        setMobileDrawerOpen(false);
-    }, []);
-    
     const handleCloseDialog = useCallback(() => {
         setDialogOpen(false);
         setEditSession(null);
@@ -449,29 +683,6 @@ export default function Structure() {
         handleCloseDialog();
     }, [editSession, form, users, handleCloseDialog]);
     
-    const handleDelete = useCallback((id) => {
-        setUsers(users.filter(s => s.id !== id));
-    }, [users]);
-
-    const handleSelectStudent = useCallback((user) => {
-        setSelectedStudent(getStudentDetails(user));
-        setDrawerOpen(true);
-    }, [getStudentDetails]);
-    
-    const handleCloseDrawer = useCallback(() => {
-        setDrawerOpen(false);
-        setSelectedStudent(null);
-    }, []);
-
-    const handleOpenReporteHoras = useCallback(() => {
-        setReporteDrawerOpen(true);
-        setMobileDrawerOpen(false);
-    }, []);
-
-    const handleCloseReporteHoras = useCallback(() => {
-        setReporteDrawerOpen(false);
-    }, []);
-
     // Función para refrescar datos
     const handleRefresh = useCallback(async () => {
         setRefreshing(true);
@@ -503,115 +714,85 @@ export default function Structure() {
 
     const handleCloseAdminAssignments = useCallback(() => {
         setAdminAssignmentsOpen(false);
+        // Limpiar el filtro de docente seleccionado cuando se cierra
+        setSelectedTeacherFilter(null);
     }, []);
 
-    // Renderizar las estadísticas en la tabla
-    const renderStats = useCallback((user) => {
-        // ...existing code...
-        const stats = teacherStats[user.numeroControl] || {
-            total: 0,
-            completed: 0,
-            pending: 0,
-            overdue: 0,
-            // Si el backend no envía estos campos, los calculamos aquí
-            late: 0,
-            notDelivered: 0
-        };
-
-        // Si el backend no envía late/notDelivered, los calculamos a partir de los registros del usuario si existen
-        if (!('late' in stats) || !('notDelivered' in stats)) {
-            // Suponiendo que user.registros contiene las asignaciones y su estado
-            if (user.registros && Array.isArray(user.registros)) {
-                stats.late = user.registros.filter(r => r.estado === 'Entregado con Retraso').length;
-                stats.notDelivered = user.registros.filter(r => r.estado === 'No Entregado').length;
-            }
+    // Función para manejar clics en estadísticas
+    const handleStatClick = useCallback((user, filterType) => {
+        console.log(`Mostrando ${filterType} para el docente:`, user.nombreCompleto || `${user.nombre} ${user.apellidoPaterno} ${user.apellidoMaterno}`);
+        
+        // Mapear filterType a los valores esperados por el backend
+        let statusFilter = 'all';
+        switch (filterType) {
+            case 'total':
+                statusFilter = 'all';
+                break;
+            case 'pending':
+                statusFilter = 'pending';
+                break;
+            case 'completed':
+                statusFilter = 'completed';
+                break;
+            case 'completed-late':
+                statusFilter = 'completed-late';
+                break;
+            case 'not-delivered':
+                statusFilter = 'not-delivered';
+                break;
+            default:
+                statusFilter = 'all';
         }
-
-        // Calcular ScoreCard como porcentaje de completadas
-        const scorePercent = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
-
-        return (
-            <>
-                <TableCell align="center">
-                    <Chip 
-                        label={stats.total} 
-                        color="primary" 
-                        variant="outlined"
-                        size="small"
-                    />
-                </TableCell>
-                <TableCell align="center">
-                    <Chip 
-                        label={stats.completed} 
-                        color="success" 
-                        variant="outlined"
-                        size="small"
-                    />
-                </TableCell>
-                <TableCell align="center">
-                    <Chip 
-                        label={stats.pending} 
-                        color="warning" 
-                        variant="outlined"
-                        size="small"
-                    />
-                </TableCell>
-                <TableCell align="center">
-                    <Chip 
-                        label={stats.overdue} 
-                        color="error" 
-                        variant="outlined"
-                        size="small"
-                    />
-                </TableCell>
-                <TableCell align="center">
-                    <Chip 
-                        label={`${scorePercent}%`} 
-                        color={scorePercent === 100 ? "success" : scorePercent >= 70 ? "primary" : scorePercent > 0 ? "warning" : "default"}
-                        variant="filled"
-                        size="small"
-                        sx={{ fontWeight: 'bold' }}
-                    />
-                </TableCell>
-            </>
-        );
-    }, [teacherStats]);
+        
+        // Configurar el filtro de docente y el tipo de estado
+        setSelectedTeacherFilter({
+            teacherId: user._id,
+            teacherName: user.nombreCompleto || `${user.nombre} ${user.apellidoPaterno} ${user.apellidoMaterno}`,
+            statusFilter: statusFilter,
+            filterType: filterType
+        });
+        
+        // Abrir el panel de administración de asignaciones
+        setAdminAssignmentsOpen(true);
+        setMobileDrawerOpen(false);
+    }, []);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: '#f8fafc' }}>
-            {/* Filtros de estado tipo tabs */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 2, mt: 2, alignItems: 'center', justifyContent: 'flex-end' }}>
-                <Chip
+            {/* Filtros de estado tipo tabs - MEJORADOS */}
+            <Box sx={{ display: 'flex', gap: 2, mb: 2, mt: 2, alignItems: 'center', justifyContent: 'flex-end', px: 3 }}>
+                <FilterChip
                     label={<><Assignment sx={{ mr: 0.5 }} />Total</>}
-                    color={statusFilter === 'total' ? 'primary' : 'default'}
+                    chipcolor="primary"
+                    selected={statusFilter === 'total'}
                     onClick={() => setStatusFilter('total')}
-                    sx={{ fontWeight: 'bold', px: 2, height: 40 }}
                 />
-                <Chip
+                <FilterChip
                     label={<><AccessTime sx={{ mr: 0.5 }} />Pendientes</>}
-                    color={statusFilter === 'pendientes' ? 'info' : 'default'}
+                    chipcolor="info"
+                    selected={statusFilter === 'pendientes'}
                     onClick={() => setStatusFilter('pendientes')}
-                    sx={{ fontWeight: 'bold', px: 2, height: 40 }}
                 />
-                <Chip
+                <FilterChip
                     label={<><CheckCircle sx={{ mr: 0.5 }} />Entregadas</>}
-                    color={statusFilter === 'entregadas' ? 'success' : 'default'}
+                    chipcolor="success"
+                    selected={statusFilter === 'entregadas'}
                     onClick={() => setStatusFilter('entregadas')}
-                    sx={{ fontWeight: 'bold', px: 2, height: 40 }}
                 />
-                <Chip
-                    label={<><Warning sx={{ mr: 0.5 }} />Entregadas con Retraso</>}
-                    color={statusFilter === 'retraso' ? 'warning' : 'default'}
+                <FilterChip
+                    label={<><Warning sx={{ mr: 0.5 }} />Con Retraso</>}
+                    chipcolor="warning"
+                    selected={statusFilter === 'retraso'}
                     onClick={() => setStatusFilter('retraso')}
-                    sx={{ fontWeight: 'bold', px: 2, height: 40 }}
                 />
-                <Chip
+                <FilterChip
                     label={<><Cancel sx={{ mr: 0.5 }} />No Entregadas</>}
-                    color={statusFilter === 'noentregadas' ? 'error' : 'default'}
+                    chipcolor="error"
+                    selected={statusFilter === 'noentregadas'}
                     onClick={() => setStatusFilter('noentregadas')}
-                    sx={{ fontWeight: 'bold', px: 2, height: 40 }}
                 />
             </Box>
+            
             {/* Contenido principal */}
             <Box sx={{ 
                 flex: 1, 
@@ -700,7 +881,6 @@ export default function Structure() {
                                         <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Foto</TableCell>
                                         <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Número de Control</TableCell>
                                         <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Nombre Completo</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Carrera</TableCell>
                                         <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>Email</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>Total</TableCell>
                                         <TableCell align="center" sx={{ fontWeight: 'bold', color: 'primary.main' }}>Pendientes</TableCell>
@@ -739,13 +919,20 @@ export default function Structure() {
                                         <TableRow>
                                             <TableCell colSpan={11} align="center" sx={{ py: 8 }}>
                                                 <Typography variant="h6" color="text.secondary">
-                                                    No hay usuarios registrados
+                                                    {statusFilter === 'total' 
+                                                        ? 'No hay usuarios registrados'
+                                                        : `No hay docentes con ${statusFilter === 'pendientes' ? 'asignaciones pendientes' :
+                                                            statusFilter === 'entregadas' ? 'asignaciones entregadas' :
+                                                            statusFilter === 'retraso' ? 'asignaciones entregadas con retraso' :
+                                                            statusFilter === 'noentregadas' ? 'asignaciones no entregadas' : 'este filtro'
+                                                        }`
+                                                    }
                                                 </Typography>
                                             </TableCell>
                                         </TableRow>
                                     ) : (
                                         filteredUsers.map((user) => (
-                                            <TeacherRow key={user._id} user={user} />
+                                            <TeacherRow key={user._id} user={user} onStatClick={handleStatClick} />
                                         ))
                                     )}
                                 </TableBody>
@@ -931,6 +1118,7 @@ export default function Structure() {
                 <AdminAssignments
                     open={adminAssignmentsOpen}
                     onClose={handleCloseAdminAssignments}
+                    initialFilter={selectedTeacherFilter}
                 />
             </AdminErrorBoundary>
         </Box>

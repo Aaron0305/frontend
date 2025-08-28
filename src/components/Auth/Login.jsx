@@ -89,10 +89,11 @@ export default function Login() {
   const { login, currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
   
-  // Redirigir si ya hay una sesión activa
+  // Redirigir si ya hay una sesión activa según el rol
   useEffect(() => {
     if (currentUser) {
-      navigate('/', { replace: true });
+      const redirectPath = currentUser.role === 'admin' ? '/admin-structure' : '/dashboard';
+      navigate(redirectPath, { replace: true });
     }
   }, [currentUser, navigate]);
 
@@ -116,10 +117,11 @@ export default function Login() {
     try {
       // login debe lanzar error si falla, o devolver usuario/token si es correcto
       const result = await login(email, password);
-      if (result) {
+      if (result && result.success) {
         setSuccess(true);
+        // Redirigir según el rol del usuario
         setTimeout(() => {
-          navigate('/', { replace: true });
+          navigate(result.redirectPath || '/', { replace: true });
         }, 1000);
       } else {
         setError('Usuario o contraseña incorrectos');

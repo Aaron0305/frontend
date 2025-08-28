@@ -97,9 +97,7 @@ export default function Asignation({ open, onClose, users = [] }) {
         title: '',
         description: '',
         dueDate: null,
-        dueTime: null,
         closeDate: null,
-        closeTime: null,
         isGeneral: false,
         assignedTo: [],
         attachments: []
@@ -139,33 +137,6 @@ export default function Asignation({ open, onClose, users = [] }) {
             [name]: date
         }));
         setTouched(prev => ({ ...prev, [name]: true }));
-    };
-
-    const handleTimeChange = (name, time) => {
-        setForm(prev => ({
-            ...prev,
-            [name]: time
-        }));
-        setTouched(prev => ({ ...prev, [name === 'dueTime' ? 'dueDate' : 'closeDate']: true }));
-    };
-
-    const combineDateTime = (date, time) => {
-        if (!date) return null;
-        
-        const combined = new Date(date);
-        
-        if (time) {
-            const timeDate = new Date(time);
-            combined.setHours(timeDate.getHours());
-            combined.setMinutes(timeDate.getMinutes());
-        } else {
-            // Si no hay hora específica, usar la hora actual
-            const now = new Date();
-            combined.setHours(now.getHours());
-            combined.setMinutes(now.getMinutes());
-        }
-        
-        return combined;
     };
 
     const handleToggleGeneral = () => {
@@ -288,8 +259,8 @@ export default function Asignation({ open, onClose, users = [] }) {
             }
 
             console.log(' 📅 Procesando fechas...');
-            const dueDateWithTime = combineDateTime(form.dueDate, form.dueTime);
-            const closeDateWithTime = combineDateTime(form.closeDate, form.closeTime);
+            const dueDateWithTime = form.dueDate;
+            const closeDateWithTime = form.closeDate;
 
             if (!dueDateWithTime || !closeDateWithTime) {
                 throw new Error('Error al procesar las fechas. Verifique que estén correctamente establecidas.');
@@ -545,95 +516,166 @@ export default function Asignation({ open, onClose, users = [] }) {
                                 <SectionHeader variant="subtitle1">
                                     <CalendarToday /> Fechas y horas importantes
                                 </SectionHeader>
-                                <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
-                                        <Box sx={{ display: 'flex', gap: 2 }}>
-                                            <DatePicker
-                                                label="Fecha de Entrega"
-                                                value={form.dueDate}
-                                                onChange={(date) => handleDateChange('dueDate', date)}
-                                                renderInput={(params) => (
-                                                    <TextField 
-                                                        {...params} 
-                                                        fullWidth 
-                                                        required
-                                                        error={touched.dueDate && !form.dueDate}
-                                                        helperText={touched.dueDate && !form.dueDate ? 'Este campo es requerido' : ''}
-                                                        InputProps={{
-                                                            ...params.InputProps,
-                                                            startAdornment: (
-                                                                <CalendarToday color="action" sx={{ mr: 1 }} />
-                                                            )
-                                                        }}
-                                                    />
-                                                )}
-                                            />
-                                            <TimePicker
-                                                label="Hora de Entrega"
-                                                value={form.dueTime}
-                                                onChange={(time) => handleTimeChange('dueTime', time)}
-                                                renderInput={(params) => (
-                                                    <TextField 
-                                                        {...params} 
-                                                        fullWidth 
-                                                        required
-                                                        error={touched.dueDate && !form.dueTime}
-                                                        helperText={touched.dueDate && !form.dueTime ? 'Este campo es requerido' : ''}
-                                                        InputProps={{
-                                                            ...params.InputProps,
-                                                            startAdornment: (
-                                                                <AccessTime color="action" sx={{ mr: 1 }} />
-                                                            )
-                                                        }}
-                                                    />
-                                                )}
-                                            />
-                                        </Box>
-                                        <Box sx={{ display: 'flex', gap: 2 }}>
-                                            <DatePicker
-                                                label="Fecha de Cierre"
-                                                value={form.closeDate}
-                                                onChange={(date) => handleDateChange('closeDate', date)}
-                                                minDate={form.dueDate}
-                                                renderInput={(params) => (
-                                                    <TextField 
-                                                        {...params} 
-                                                        fullWidth 
-                                                        required
-                                                        error={touched.closeDate && !form.closeDate}
-                                                        helperText={touched.closeDate && !form.closeDate ? 'Este campo es requerido' : ''}
-                                                        InputProps={{
-                                                            ...params.InputProps,
-                                                            startAdornment: (
-                                                                <CalendarToday color="action" sx={{ mr: 1 }} />
-                                                            )
-                                                        }}
-                                                    />
-                                                )}
-                                            />
-                                            <TimePicker
-                                                label="Hora de Cierre"
-                                                value={form.closeTime}
-                                                onChange={(time) => handleTimeChange('closeTime', time)}
-                                                renderInput={(params) => (
-                                                    <TextField 
-                                                        {...params} 
-                                                        fullWidth 
-                                                        required
-                                                        error={touched.closeDate && !form.closeTime}
-                                                        helperText={touched.closeDate && !form.closeTime ? 'Este campo es requerido' : ''}
-                                                        InputProps={{
-                                                            ...params.InputProps,
-                                                            startAdornment: (
-                                                                <AccessTime color="action" sx={{ mr: 1 }} />
-                                                            )
-                                                        }}
-                                                    />
-                                                )}
+                                
+                                {/* Botones de fecha rápida - Diseño minimalista */}
+                                <Box sx={{ mb: 3 }}>
+                                    <Typography variant="caption" color="text.secondary" sx={{ mb: 1.5, display: 'block' }}>
+                                        Tiempos comunes:
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                                        {[
+                                            { label: 'Hoy', icon: '📅', dueHours: 0, closeHours: 48 },
+                                            { label: 'Mañana', icon: '🌅', dueHours: 24, closeHours: 72 },
+                                            { label: '3 días', icon: '📆', dueHours: 72, closeHours: 120 },
+                                            { label: '1 semana', icon: '🗓️', dueHours: 168, closeHours: 216 },
+                                            { label: '2 semanas', icon: '📋', dueHours: 336, closeHours: 384 }
+                                        ].map((preset) => (
+                                            <Button
+                                                key={preset.label}
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() => {
+                                                    const now = new Date();
+                                                    
+                                                    // Fecha de entrega
+                                                    const dueDate = new Date(now.getTime() + preset.dueHours * 60 * 60 * 1000);
+                                                    dueDate.setHours(23, 59, 0, 0);
+                                                    
+                                                    // Fecha de cierre - 2 días después de la entrega
+                                                    const closeDate = new Date(now.getTime() + preset.closeHours * 60 * 60 * 1000);
+                                                    closeDate.setHours(23, 59, 0, 0);
+                                                    
+                                                    setForm(prev => ({
+                                                        ...prev,
+                                                        dueDate: dueDate,
+                                                        closeDate: closeDate
+                                                    }));
+                                                    setTouched(prev => ({ ...prev, dueDate: true, closeDate: true }));
+                                                }}
+                                                sx={{ 
+                                                    minWidth: 'auto',
+                                                    px: 1.5,
+                                                    py: 0.5,
+                                                    fontSize: '0.75rem',
+                                                    borderRadius: '20px',
+                                                    textTransform: 'none',
+                                                    color: 'text.secondary',
+                                                    borderColor: 'grey.300',
+                                                    '&:hover': {
+                                                        backgroundColor: 'primary.main',
+                                                        color: 'white',
+                                                        borderColor: 'primary.main',
+                                                        transform: 'translateY(-1px)',
+                                                        boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)'
+                                                    },
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                            >
+                                                <span style={{ marginRight: '4px' }}>{preset.icon}</span>
+                                                {preset.label}
+                                            </Button>
+                                        ))}
+                                    </Box>
+                                </Box>
+
+                                {/* Campos de fecha y hora simplificados */}
+                                <Box sx={{ 
+                                    display: 'flex', 
+                                    flexDirection: 'column', 
+                                    gap: 3,
+                                    mt: 2
+                                }}>
+                                    <Box sx={{ mb: 2 }}>
+                                        <Typography variant="body2" sx={{ mb: 1, fontWeight: 500, color: 'text.primary' }}>
+                                            📅 Fecha límite de entrega *
+                                        </Typography>
+                                    <TextField
+                                        fullWidth
+                                        type="datetime-local"
+                                        value={form.dueDate ? new Date(form.dueDate.getTime() - form.dueDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
+                                        onChange={(e) => {
+                                            const date = e.target.value ? new Date(e.target.value) : null;
+                                            setForm(prev => ({ ...prev, dueDate: date }));
+                                            setTouched(prev => ({ ...prev, dueDate: true }));
+                                        }}
+                                        required
+                                        error={touched.dueDate && !form.dueDate}
+                                            helperText={touched.dueDate && !form.dueDate ? 'Este campo es requerido' : 'Cuándo deben entregar los docentes'}
+                                            size="medium"
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                    borderRadius: '8px',
+                                                    backgroundColor: 'background.paper'
+                                            },
+                                                '& .MuiInputBase-input': {
+                                                    padding: '12px 14px'
+                                            }
+                                        }}
+                                    />
+                                    </Box>
+
+                                    <Box sx={{ mb: 2 }}>
+                                        <Typography variant="body2" sx={{ mb: 1, fontWeight: 500, color: 'text.primary' }}>
+                                            ⏰ Fecha de cierre definitivo *
+                                        </Typography>
+                                    <TextField
+                                        fullWidth
+                                        type="datetime-local"
+                                        value={form.closeDate ? new Date(form.closeDate.getTime() - form.closeDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
+                                        onChange={(e) => {
+                                            const date = e.target.value ? new Date(e.target.value) : null;
+                                            setForm(prev => ({ ...prev, closeDate: date }));
+                                            setTouched(prev => ({ ...prev, closeDate: true }));
+                                        }}
+                                        required
+                                        error={touched.closeDate && !form.closeDate}
+                                            helperText={touched.closeDate && !form.closeDate ? 'Este campo es requerido' : 'Después ya no se aceptan entregas'}
+                                            size="medium"
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                    borderRadius: '8px',
+                                                    backgroundColor: 'background.paper'
+                                            },
+                                                '& .MuiInputBase-input': {
+                                                    padding: '12px 14px'
+                                            }
+                                        }}
+                                        inputProps={{
+                                            min: form.dueDate ? new Date(form.dueDate.getTime() - form.dueDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : undefined
+                                        }}
+                                    />
+                                    </Box>
+                                </Box>
+
+                                {/* Resumen minimalista */}
+                                {form.dueDate && form.closeDate && (
+                                    <Box sx={{ 
+                                        mt: 2, 
+                                        p: 2, 
+                                        bgcolor: 'primary.50', 
+                                        borderRadius: '12px',
+                                        border: '1px solid',
+                                        borderColor: 'primary.100'
+                                    }}>
+                                        <Typography variant="caption" color="primary.main" sx={{ fontWeight: 600, mb: 1, display: 'block' }}>
+                                            ✅ Fechas configuradas
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
+                                                📅 {form.dueDate.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                <Typography component="span" sx={{ mx: 1, color: 'text.secondary' }}>→</Typography>
+                                                ⏰ {form.closeDate.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                            </Typography>
+                                            <Chip 
+                                                label={`${Math.ceil((form.closeDate - form.dueDate) / (1000 * 60 * 60 * 24))} días`}
+                                                size="small"
+                                                color="primary"
+                                                variant="outlined"
+                                                sx={{ fontSize: '0.7rem', height: '24px' }}
                                             />
                                         </Box>
                                     </Box>
-                                </LocalizationProvider>
+                                )}
                             </motion.div>
                         )}
 
@@ -667,7 +709,9 @@ export default function Asignation({ open, onClose, users = [] }) {
                                         </Typography>
                                         <Paper variant="outlined" sx={{ p: 1, maxHeight: '300px', overflow: 'auto' }}>
                                             <List dense>
-                                                {users.map((user) => (
+                                                {users
+                                                    .filter(user => user.role === 'docente')
+                                                    .map((user) => (
                                                     <React.Fragment key={user._id}>
                                                         <ListItem 
                                                             button 

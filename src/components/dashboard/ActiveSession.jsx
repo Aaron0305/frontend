@@ -71,33 +71,38 @@ const shimmerAnimation = keyframes`
 
 // Contenedor principal más compacto y moderno
 const ModernContainer = styled(Container)(({ theme }) => ({
-  padding: theme.spacing(1.5),
+  padding: theme.spacing(1),
   maxWidth: '100% !important',
   width: '100%',
-  marginTop: theme.spacing(2),
+  marginTop: theme.spacing(4), // Espacio reducido para el navbar
+  paddingTop: theme.spacing(1), // Padding adicional en la parte superior
   
   [theme.breakpoints.up('sm')]: {
-    padding: theme.spacing(2),
-    maxWidth: '95% !important',
-    marginTop: theme.spacing(2.5),
+    padding: theme.spacing(1.5),
+    maxWidth: '98% !important',
+    marginTop: theme.spacing(4.5),
+    paddingTop: theme.spacing(1.5),
   },
   
   [theme.breakpoints.up('md')]: {
-    padding: theme.spacing(2.5),
-    maxWidth: '90% !important',
-    marginTop: theme.spacing(3),
+    padding: theme.spacing(2),
+    maxWidth: '96% !important',
+    marginTop: theme.spacing(5),
+    paddingTop: theme.spacing(2),
   },
   
   [theme.breakpoints.up('lg')]: {
-    padding: theme.spacing(3),
-    maxWidth: '85% !important',
-    marginTop: theme.spacing(3.5),
+    padding: theme.spacing(2.5),
+    maxWidth: '94% !important',
+    marginTop: theme.spacing(5.5),
+    paddingTop: theme.spacing(2.5),
   },
   
   [theme.breakpoints.up('xl')]: {
-    padding: theme.spacing(3.5),
-    maxWidth: '80% !important',
-    marginTop: theme.spacing(4),
+    padding: theme.spacing(3),
+    maxWidth: '92% !important',
+    marginTop: theme.spacing(6),
+    paddingTop: theme.spacing(3),
   },
 }));
 
@@ -105,33 +110,39 @@ const ModernContainer = styled(Container)(({ theme }) => ({
 const CompactProfileCard = styled(Card)(({ theme }) => ({
   background: 'linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.95) 100%)',
   backdropFilter: 'blur(30px)',
-  borderRadius: '24px',
+  borderRadius: '16px',
   border: '1px solid rgba(255,255,255,0.5)',
-  boxShadow: '0 25px 50px rgba(0,0,0,0.08), 0 0 0 1px rgba(255,255,255,0.3)',
+  boxShadow: '0 15px 30px rgba(0,0,0,0.06), 0 0 0 1px rgba(255,255,255,0.3)',
   position: 'relative',
   overflow: 'hidden',
   transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-  marginTop: theme.spacing(1),
+  margin: '0.5rem 0',
+  width: '100%',
   
   '&:hover': {
-    transform: 'translateY(-12px)',
-    boxShadow: '0 40px 80px rgba(0,0,0,0.12), 0 0 0 1px rgba(255,255,255,0.4)',
+    transform: 'translateY(-8px)',
+    boxShadow: '0 20px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(255,255,255,0.4)',
     '& .gradient-bar': {
-      height: '8px',
+      height: '6px',
     }
   },
   
   [theme.breakpoints.down('sm')]: {
-    borderRadius: '20px',
-    margin: `${theme.spacing(1)} ${theme.spacing(0.5)}`,
+    borderRadius: '12px',
+    margin: '0.25rem 0',
+    padding: theme.spacing(1),
   },
   
   [theme.breakpoints.up('sm')]: {
-    marginTop: theme.spacing(1.5),
+    borderRadius: '16px',
+    margin: '0.5rem 0',
+    padding: theme.spacing(1.5),
   },
   
   [theme.breakpoints.up('md')]: {
-    marginTop: theme.spacing(2),
+    borderRadius: '20px',
+    margin: '0.75rem 0',
+    padding: theme.spacing(2),
   }
 }));
 
@@ -188,18 +199,19 @@ const ModernAvatar = styled(Avatar)(({ theme }) => ({
 
 // Tarjetas de información más modernas y compactas
 const ModernInfoCard = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(1.5),
-  borderRadius: '16px',
+  padding: theme.spacing(1),
+  borderRadius: '12px',
   background: 'linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(255, 255, 255, 0.8) 100%)',
   border: '1px solid rgba(99, 102, 241, 0.1)',
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
   cursor: 'pointer',
+  margin: '0.25rem 0',
   
   '&:hover': {
-    transform: 'translateY(-6px) scale(1.03)',
-    boxShadow: '0 20px 40px rgba(99, 102, 241, 0.15)',
+    transform: 'translateY(-4px) scale(1.02)',
+    boxShadow: '0 10px 20px rgba(99, 102, 241, 0.12)',
     background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)',
     border: '1px solid rgba(99, 102, 241, 0.2)',
     
@@ -208,18 +220,20 @@ const ModernInfoCard = styled(Paper)(({ theme }) => ({
     },
     
     '& .icon-container': {
-      transform: 'scale(1.1) rotate(5deg)',
+      transform: 'scale(1.05) rotate(3deg)',
     }
   },
   
   [theme.breakpoints.up('sm')]: {
-    padding: theme.spacing(2),
-    borderRadius: '18px',
+    padding: theme.spacing(1.5),
+    borderRadius: '14px',
+    margin: '0.5rem 0',
   },
   
   [theme.breakpoints.up('md')]: {
-    padding: theme.spacing(2.5),
-    borderRadius: '20px',
+    padding: theme.spacing(2),
+    borderRadius: '16px',
+    margin: '0.75rem 0',
   }
 }));
 
@@ -368,6 +382,7 @@ const ModernLoadingContainer = styled(Box)(({ theme }) => ({
 
 const ActiveSession = () => {
   const { currentUser, loading } = useContext(AuthContext);
+  const DriveActivesession = React.lazy(() => import('./DriveActivesession'));
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
@@ -384,20 +399,6 @@ const ActiveSession = () => {
       console.log('✅ Usuario completamente cargado:', currentUser);
       console.log('📁 Foto de perfil disponible:', currentUser.fotoPerfil);
       
-      const lastUserReload = sessionStorage.getItem('lastUserReload');
-      const currentUserKey = `${currentUser._id}-${currentUser.fotoPerfil}`;
-      
-      if (lastUserReload !== currentUserKey) {
-        console.log('🔄 Recargando página para mostrar imagen actualizada...');
-        sessionStorage.setItem('lastUserReload', currentUserKey);
-        
-        setTimeout(() => {
-          window.location.reload();
-        }, 5);
-        
-        return; 
-      }
-      
       setUserReady(true);
       setTimeout(() => setShowContent(true), 200);
       
@@ -406,7 +407,7 @@ const ActiveSession = () => {
       setUserReady(true);
       setTimeout(() => setShowContent(true), 200);
     }
-  }, [loading, currentUser?.fotoPerfil, currentUser?._id]);
+  }, [loading, currentUser]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -501,6 +502,9 @@ const ActiveSession = () => {
 
   return (
     <ModernContainer>
+      <React.Suspense fallback={null}>
+        <DriveActivesession />
+      </React.Suspense>
       <Fade in={showContent} timeout={600}>
         <Box>
           {/* Mensaje de bienvenida elegante */}
@@ -566,11 +570,11 @@ const ActiveSession = () => {
               <ElegantGradientBar className="gradient-bar" />
               <CardContent 
                 sx={{ 
-                  p: { xs: 2.5, sm: 3, md: 3.5 },
-                  '&:last-child': { pb: { xs: 2.5, sm: 3, md: 3.5 } }
+                  p: { xs: 1.5, sm: 2, md: 2.5 },
+                  '&:last-child': { pb: { xs: 1.5, sm: 2, md: 2.5 } }
                 }}
               >
-                <Grid container spacing={{ xs: 2.5, sm: 3, md: 3.5 }} alignItems="center">
+                <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5 }} alignItems="center">
                   {/* Avatar compacto */}
                   <Grid 
                     item 
@@ -580,11 +584,12 @@ const ActiveSession = () => {
                     display="flex" 
                     justifyContent="center"
                     alignItems="center"
+                    sx={{ pb: { xs: 1, sm: 1.5, md: 2 } }}
                   >
                     <ModernAvatar
                       src={currentUser?.fotoPerfil && currentUser.fotoPerfil !== ''
-                        ? `http://localhost:3001/uploads/perfiles/${currentUser.fotoPerfil}?t=${Date.now()}`
-                        : 'http://localhost:3001/uploads/perfiles/2138822222222_1749571359362.png'
+                        ? currentUser.fotoPerfil
+                        : 'https://res.cloudinary.com/dzrstenqb/image/upload/v1/perfiles/default_profile'
                       }
                       alt={`Foto de perfil de ${currentUser?.nombre || 'Usuario'}`}
                       sx={{ 
